@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CMOS PPAC Scaling Studio | Area · Power · Frequency · Yield · Cost</title>
+  <meta name="author" content="Liangdacheng with GPT5.5" />
+  <style>
+    :root{
+      --bg:#050713;
+      --bg2:#081022;
+      --panel:rgba(16,24,48,.72);
+      --panel-strong:rgba(19,28,58,.92);
+      --stroke:rgba(148,163,184,.18);
+      --stroke2:rgba(148,163,184,.32);
+      --text:#eef6ff;
+      --muted:#9fb0c9;
+      --muted2:#718096;
+      --cyan:#39d9ff;
+      --blue:#6c7cff;
+      --purple:#b15cff;
+      --pink:#ff4fd8;
+      --green:#39f5a6;
+      --yellow:#ffe27a;
+      --red:#ff6b7a;
+      --shadow: 0 30px 90px rgba(0,0,0,.48);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 8% 0%, rgba(57,217,255,.24), transparent 30%),
+        radial-gradient(circle at 85% 8%, rgba(177,92,255,.25), transparent 28%),
+        radial-gradient(circle at 54% 62%, rgba(255,79,216,.11), transparent 34%),
+        linear-gradient(145deg, var(--bg), var(--bg2) 48%, #05060d 100%);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:-1px;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size:42px 42px;
+      mask-image:linear-gradient(to bottom, rgba(0,0,0,.82), rgba(0,0,0,.14));
+      pointer-events:none;
+      z-index:-3;
+    }
+    body::after{
+      content:"";
+      position:fixed; inset:0;
+      background:radial-gradient(circle at 50% -10%, rgba(255,255,255,.08), transparent 20%);
+      pointer-events:none; z-index:-2;
+    }
+    .orb{position:fixed; width:520px; height:520px; border-radius:50%; filter:blur(22px); opacity:.18; z-index:-1; pointer-events:none; animation:float 12s ease-in-out infinite alternate}
+    .orb.one{left:-180px; top:180px; background:conic-gradient(from 90deg, var(--cyan), var(--blue), transparent, var(--cyan))}
+    .orb.two{right:-160px; bottom:120px; background:conic-gradient(from 10deg, var(--pink), var(--purple), transparent, var(--cyan)); animation-delay:-4s}
+    @keyframes float{from{transform:translate3d(0,0,0) scale(1)} to{transform:translate3d(40px,-38px,0) scale(1.08)}}
+    a{color:#9be7ff;text-decoration:none} a:hover{text-decoration:underline}
+    .wrap{width:min(1480px, calc(100% - 36px)); margin:0 auto 64px}
+    header{padding:42px 0 22px; position:relative}
+    .hero{
+      display:grid; grid-template-columns:1.2fr .8fr; gap:24px; align-items:stretch;
+    }
+    .hero-card,.glass{
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(20,31,64,.75), rgba(11,17,35,.64));
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(18px);
+      border-radius:var(--radius);
+    }
+    .hero-card{padding:34px; overflow:hidden; position:relative}
+    .hero-card::before{
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background:linear-gradient(125deg, rgba(57,217,255,.16), transparent 38%, rgba(255,79,216,.12) 75%, transparent);
+    }
+    .kicker{display:inline-flex; gap:10px; align-items:center; padding:8px 12px; border:1px solid rgba(57,217,255,.25); border-radius:999px; background:rgba(57,217,255,.08); color:#b9f3ff; font-size:13px; letter-spacing:.08em; text-transform:uppercase}
+    .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 6px rgba(57,245,166,.12),0 0 22px var(--green)}
+    h1{font-size:clamp(34px,5vw,68px); line-height:1.02; margin:22px 0 14px; letter-spacing:-.06em}
+    .grad{background:linear-gradient(100deg,#fff 0%,#b8f3ff 20%,#b78cff 56%,#ff8dea 86%); -webkit-background-clip:text; background-clip:text; color:transparent}
+    .subtitle{font-size:17px; line-height:1.72; color:#c4d0e4; max-width:900px; margin:0; position:relative}
+    .author-credit{display:inline-flex; align-items:center; gap:8px; margin-top:16px; padding:8px 12px; border:1px solid rgba(57,217,255,.28); border-radius:999px; background:rgba(57,217,255,.075); color:#d8f7ff; font-size:13px; font-weight:750; letter-spacing:.01em; position:relative}
+    .author-credit::before{content:""; width:7px; height:7px; border-radius:999px; background:var(--cyan); box-shadow:0 0 18px var(--cyan)}
+    .footer-credit{border:1px solid var(--stroke); background:rgba(255,255,255,.035); border-radius:16px; padding:12px 14px; color:#aebcd4; font-size:13px; line-height:1.55; margin:18px 0 0; text-align:right}
+    .footer-credit b{color:#f4fbff}
+    .hero-actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; position:relative}
+    .btn{
+      border:1px solid var(--stroke2); color:var(--text); background:rgba(255,255,255,.065); border-radius:16px; padding:11px 14px; cursor:pointer; font-weight:700; transition:.18s transform, .18s background, .18s border-color; display:inline-flex; align-items:center; gap:9px;
+    }
+    .btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.1); border-color:rgba(57,217,255,.42); text-decoration:none}
+    .btn.primary{background:linear-gradient(135deg,rgba(57,217,255,.24),rgba(177,92,255,.26)); border-color:rgba(57,217,255,.36); box-shadow:0 0 38px rgba(57,217,255,.10) inset}
+    .mini-dashboard{padding:22px; display:grid; grid-template-columns:1fr 1fr; gap:14px; align-content:center}
+    .mini-stat{border:1px solid var(--stroke); background:rgba(255,255,255,.045); border-radius:18px; padding:16px; min-height:106px; position:relative; overflow:hidden}
+    .mini-stat::after{content:""; position:absolute; width:120px; height:120px; right:-52px; top:-52px; background:radial-gradient(circle, rgba(57,217,255,.28), transparent 68%)}
+    .mini-stat b{font-size:29px; display:block; letter-spacing:-.04em}
+    .mini-stat span{color:var(--muted); font-size:13px}
+    .nav{display:flex; gap:10px; flex-wrap:wrap; margin:22px 0 8px}
+    .nav a{padding:8px 12px; border:1px solid var(--stroke); border-radius:999px; color:#c9d8ec; background:rgba(255,255,255,.04); font-size:13px}
+    .section{margin-top:22px}
+    .section-title{display:grid; grid-template-columns:1fr; gap:7px; margin:28px 0 12px}
+    .section-title h2{display:block; width:100%; line-height:1.18}
+    .section-title .hint{display:block; width:100%; max-width:1100px}
+    h2{font-size:24px; margin:0; letter-spacing:-.03em}
+    .hint{color:var(--muted); font-size:13px; line-height:1.55}
+    .grid{display:grid; gap:16px}
+    .grid.inputs{grid-template-columns:1.05fr 1.05fr .9fr}
+    .panel{padding:18px; border:1px solid var(--stroke); background:linear-gradient(180deg, rgba(16,24,48,.78), rgba(10,16,33,.66)); border-radius:22px; box-shadow:0 18px 60px rgba(0,0,0,.26); backdrop-filter: blur(16px)}
+    .panel h3{margin:0 0 14px; font-size:16px; display:flex; align-items:center; gap:10px; letter-spacing:-.01em; line-height:1.25; min-height:22px; white-space:normal}
+    .comparison .panel h3{display:flex; width:100%; align-items:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .tag-dot{width:10px;height:10px;border-radius:50%; background:var(--cyan); box-shadow:0 0 18px var(--cyan)}
+    .form-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+    label{display:block; font-size:12px; color:#aebcd4; margin:0 0 7px}
+    input,select{
+      width:100%; color:var(--text); background:rgba(2,6,23,.62); border:1px solid rgba(148,163,184,.22); border-radius:14px; padding:12px 12px; outline:none; font-size:14px; transition:border .16s, box-shadow .16s, background .16s;
+    }
+    select{appearance:none; background-image:linear-gradient(45deg, transparent 50%, #93c5fd 50%), linear-gradient(135deg, #93c5fd 50%, transparent 50%); background-position:calc(100% - 18px) 52%, calc(100% - 12px) 52%; background-size:6px 6px, 6px 6px; background-repeat:no-repeat}
+    input:focus, select:focus{border-color:rgba(57,217,255,.62); box-shadow:0 0 0 4px rgba(57,217,255,.08); background:rgba(2,6,23,.84)}
+    input[type="range"]{padding:0; height:36px; accent-color:#39d9ff; background:transparent; border:none; box-shadow:none}
+    .full{grid-column:1/-1}
+    .inline{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .range-value{font-variant-numeric:tabular-nums; color:#d8f7ff; font-weight:800}
+    .toggle-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+    .toggle{display:flex; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--stroke); border-radius:14px; background:rgba(255,255,255,.045); color:#cdd8e8; font-size:13px}
+    .toggle input{width:auto; accent-color:#39d9ff}
+    .cards{display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:14px}
+    .metric-card{position:relative; padding:16px; min-height:124px; overflow:hidden; border-radius:22px; border:1px solid var(--stroke); background:linear-gradient(180deg, rgba(255,255,255,.072), rgba(255,255,255,.034)); box-shadow:0 18px 50px rgba(0,0,0,.25)}
+    .metric-card::before{content:""; position:absolute; inset:0 0 auto; height:3px; background:linear-gradient(90deg, var(--cyan), var(--purple), var(--pink)); opacity:.8}
+    .metric-label{color:var(--muted); font-size:12px; margin-bottom:12px; display:flex; justify-content:space-between; gap:10px}
+    .metric-value{font-size:clamp(21px,2.6vw,33px); font-weight:850; letter-spacing:-.045em; font-variant-numeric:tabular-nums}
+    .metric-foot{color:#8fa1bb; font-size:12px; margin-top:10px; line-height:1.45}
+    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--stroke2); font-size:11px; color:#d9e7ff; background:rgba(255,255,255,.045); white-space:nowrap}
+    .badge.high{border-color:rgba(57,245,166,.34); color:#c9ffec; background:rgba(57,245,166,.08)}
+    .badge.medium{border-color:rgba(255,226,122,.36); color:#fff0ae; background:rgba(255,226,122,.08)}
+    .badge.low{border-color:rgba(255,107,122,.36); color:#ffd0d6; background:rgba(255,107,122,.08)}
+    .badge.alias{border-color:rgba(177,92,255,.36); color:#e2ccff; background:rgba(177,92,255,.08)}
+    .badge .mini-dot{width:6px;height:6px;border-radius:50%; background:currentColor; box-shadow:0 0 10px currentColor}
+    .results-layout{display:grid; grid-template-columns:1.2fr .8fr; gap:16px}
+    .chart-box{height:420px; position:relative; padding:14px; border:1px solid var(--stroke); border-radius:24px; background:rgba(7,11,25,.52); overflow:hidden}
+    .bar-chart-box{height:500px; min-height:500px}
+    .chart-box canvas{width:100%; height:100%; display:block}
+    .chart-toolbar{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
+    .chip{border:1px solid var(--stroke); color:#c9d7ec; background:rgba(255,255,255,.045); border-radius:999px; padding:8px 11px; cursor:pointer; font-size:12px; font-weight:750}
+    .chip.active{background:linear-gradient(135deg, rgba(57,217,255,.22), rgba(177,92,255,.20)); color:white; border-color:rgba(57,217,255,.42)}
+    .table-wrap{overflow:auto; border-radius:20px; border:1px solid var(--stroke); background:rgba(6,10,24,.48)}
+    table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
+    th,td{padding:12px 12px; text-align:right; border-bottom:1px solid rgba(148,163,184,.12); white-space:nowrap}
+    th:first-child,td:first-child, th:nth-child(2), td:nth-child(2){text-align:left}
+    th{position:sticky;top:0; background:rgba(13,20,42,.96); color:#c5d4e7; font-size:12px; z-index:1}
+    td{color:#dce8f7}
+    tr:hover td{background:rgba(57,217,255,.045)}
+    tr.target-row td{background:rgba(57,217,255,.075)}
+    tr.low-row td{background-image:linear-gradient(135deg, rgba(255,255,255,.018) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.018) 50%, rgba(255,255,255,.018) 75%, transparent 75%); background-size:12px 12px}
+    .comparison{display:grid; grid-template-columns:.9fr 1.1fr; gap:16px}
+    .model-note{border:1px dashed rgba(57,217,255,.36); background:rgba(57,217,255,.055); border-radius:18px; padding:14px; color:#c5eefe; line-height:1.65; font-size:13px}
+    .source-grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+    .source{border:1px solid var(--stroke); background:rgba(255,255,255,.035); border-radius:16px; padding:14px; color:#b8c7dc; font-size:13px; line-height:1.55}
+    .source b{display:block; color:#f4fbff; margin-bottom:4px}
+    .toast{position:fixed; right:22px; bottom:22px; padding:12px 14px; border-radius:16px; background:rgba(12,20,43,.92); color:#dff9ff; border:1px solid rgba(57,217,255,.33); box-shadow:0 20px 60px rgba(0,0,0,.35); transform:translateY(20px); opacity:0; pointer-events:none; transition:.2s; z-index:10}
+    .toast.show{transform:translateY(0); opacity:1}
+    .small{font-size:12px;color:var(--muted); line-height:1.55}
+    .row-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin:12px 0 0}
+    .watermark{color:#718096; font-size:12px; text-align:right; margin-top:8px}
+    @media(max-width:1180px){.hero,.grid.inputs,.results-layout,.comparison{grid-template-columns:1fr}.cards{grid-template-columns:repeat(3,1fr)}.mini-dashboard{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:760px){.wrap{width:min(100% - 20px, 1480px)}.hero-card{padding:24px}.mini-dashboard{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.source-grid{grid-template-columns:1fr}.chart-box{height:360px}.bar-chart-box{height:520px; min-height:520px}th,td{padding:10px 9px}.nav{display:none}}
+    @media(max-width:520px){.cards{grid-template-columns:1fr}.mini-dashboard{grid-template-columns:1fr}.hero-actions{flex-direction:column}.btn{justify-content:center}}
+
+
+    /* Compact header + robust chart containment fixes */
+    header{padding:22px 0 14px}
+    .hero{grid-template-columns:minmax(0,1.08fr) minmax(300px,.72fr); gap:18px; align-items:start}
+    .hero-card{padding:24px 28px}
+    .kicker{padding:6px 10px; font-size:11px}
+    h1{font-size:clamp(28px,3vw,42px); line-height:1.04; margin:12px 0 5px; letter-spacing:-.04em}
+    .hero-subline{position:relative; color:#dbeafe; font-weight:850; font-size:clamp(16px,1.55vw,22px); line-height:1.22; letter-spacing:.01em; margin:0 0 9px; text-shadow:0 0 24px rgba(57,217,255,.15)}
+    .subtitle{font-size:13.5px; line-height:1.5; max-width:1040px}
+    .author-credit{margin-top:10px; padding:6px 10px; font-size:12px}
+    .hero-actions{margin-top:14px; gap:8px}
+    .btn{padding:9px 12px; border-radius:14px; font-size:13px}
+    .nav{margin:14px 0 0; gap:8px}
+    .nav a{padding:6px 9px; font-size:12px}
+    .mini-dashboard{padding:18px; gap:12px}
+    .mini-stat{padding:13px; min-height:86px}
+    .mini-stat b{font-size:22px}
+    .comparison{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)}
+    .comparison>.panel,.results-layout>.panel{min-width:0; overflow:hidden}
+    .comparison .panel h3{white-space:normal; overflow:visible; text-overflow:clip; flex-wrap:wrap}
+    .table-wrap{min-width:0; max-width:100%}
+    .chart-box{width:100%; max-width:100%; min-width:0; overflow:hidden}
+    .bar-chart-box{height:560px; min-height:560px; padding:12px}
+    .bar-chart-box canvas{max-width:100%; max-height:100%;}
+    @media(max-width:1180px){
+      header{padding:18px 0 10px}
+      .hero{grid-template-columns:1fr; gap:14px; align-items:start}
+      .comparison,.results-layout,.grid.inputs{grid-template-columns:1fr}
+      .hero-card{padding:22px}
+      .mini-dashboard{grid-template-columns:repeat(4,minmax(0,1fr)); padding:14px}
+      .mini-stat{min-height:78px; padding:11px}
+      .mini-stat b{font-size:20px}
+    }
+    @media(max-width:760px){
+      header{padding:14px 0 8px}
+      h1{font-size:clamp(28px,8vw,34px); margin:10px 0 4px}
+      .hero-subline{font-size:15px; line-height:1.18}
+      .subtitle{font-size:12.5px; line-height:1.42; max-height:5.7em; overflow:hidden}
+      .hero-actions{gap:8px}
+      .btn{padding:8px 10px; font-size:13px}
+      .bar-chart-box{height:620px; min-height:620px; padding:10px}
+    }
+    @media(max-width:520px){
+      header{padding:12px 0 8px}
+      .hero-card{padding:18px}
+      .hero-subline{font-size:14px}
+      .subtitle{max-height:4.3em}
+      .hero-actions{display:grid; grid-template-columns:1fr 1fr; flex-direction:initial}
+      .btn{justify-content:center}
+      .mini-dashboard{grid-template-columns:1fr 1fr; padding:12px; gap:10px}
+      .mini-stat{min-height:74px; padding:10px}
+      .mini-stat b{font-size:18px}
+      .mini-stat span{font-size:10.5px}
+      .bar-chart-box{height:640px; min-height:640px}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="orb one"></div><div class="orb two"></div>
+  <div class="wrap">
+    <header>
+      <div class="hero">
+        <div class="hero-card">
+          <span class="kicker"><span class="pulse"></span> PPAC Scaling Studio · CMOS</span>
+          <h1><span class="grad">CMOS PPAC</span></h1>
+          <div class="hero-subline">Area · Power · Frequency · Yield · Cost</div>
+          <p class="subtitle">Enter the current logic area, active power, and converged frequency, then choose the source and target foundry/node. The tool estimates area, power, converged frequency, yield, and cost per good die for the target node and nearby nodes. Built-in defaults cover TSMC, Samsung, Intel, and SMIC at 28/16/14/12/10/7/6/5/4/3/2nm-class nodes with confidence labels for public anchors, interpolation, and low-confidence extrapolation.</p>
+          <div class="author-credit">Author: Liangdacheng with GPT5.5</div>
+          <div class="hero-actions">
+            <a class="btn primary" href="#inputs">Start Scaling</a>
+            <button class="btn" id="btnCopy">Copy Summary</button>
+            <button class="btn" id="btnExport">Export CSV</button>
+            <a class="btn" href="#sources">Model Sources</a>
+          </div>
+          <div class="nav">
+            <a href="#inputs">Inputs</a><a href="#target">Target Results</a><a href="#charts">Trend Charts</a><a href="#nearby">Nearby Nodes</a><a href="#compare">Foundry Compare</a><a href="#data">Node Library</a>
+          </div>
+        </div>
+        <div class="glass mini-dashboard">
+          <div class="mini-stat"><span>Target Process</span><b id="miniTarget">TSMC N2</b><span id="miniConfidence">Public / Estimated Mix</span></div>
+          <div class="mini-stat"><span>Area Shrink</span><b id="miniShrink">—</b><span>logic + optional SRAM</span></div>
+          <div class="mini-stat"><span>Frequency Gain</span><b id="miniFreq">—</b><span>Estimated converged frequency</span></div>
+          <div class="mini-stat"><span>Manufacturing Cost</span><b id="miniCost">—</b><span>good die + package/test</span></div>
+        </div>
+      </div>
+    </header>
+
+    <section id="inputs" class="section">
+      <div class="section-title"><h2>Inputs & Model Knobs</h2><div class="hint">Low-confidence nodes are not PDK data; use them only for early trade-off studies. Wafer cost and D0 can be calibrated with multipliers.</div></div>
+      <div class="grid inputs">
+        <div class="panel">
+          <h3><span class="tag-dot"></span>Current Design</h3>
+          <div class="form-grid">
+            <div><label>Current Foundry</label><select id="currentFoundry"></select></div>
+            <div><label>Current Node</label><select id="currentNode"></select></div>
+            <div><label>Logic Area A<sub>logic</sub> / mm²</label><input id="logicArea" type="number" min="0.001" step="0.1" value="50"></div>
+            <div><label>Logic Active Power / W</label><input id="logicPower" type="number" min="0" step="0.1" value="10"></div>
+            <div><label>Converged Frequency / GHz</label><input id="frequency" type="number" min="0.001" step="0.01" value="1.0"></div>
+            <div><label>Fixed IO/Analog/Pad Area / mm²</label><input id="otherArea" type="number" min="0" step="0.1" value="0"></div>
+            <div><label>SRAM Capacity / Mbit, 0 allowed</label><input id="sramMbit" type="number" min="0" step="1" value="0"></div>
+            <div><label>Current SRAM Dynamic Power / W, 0 allowed</label><input id="sramPower" type="number" min="0" step="0.1" value="0"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--purple);box-shadow:0 0 18px var(--purple)"></span>Target Process</h3>
+          <div class="form-grid">
+            <div><label>Target Foundry</label><select id="targetFoundry"></select></div>
+            <div><label>Target Node</label><select id="targetNode"></select></div>
+            <div class="full model-note" id="selectedNote">—</div>
+            <div class="full inline"><label>Frequency realization: wire/IR/thermal/CTS</label><span class="range-value" id="freqRealizationVal">100%</span></div>
+            <input class="full" id="freqRealization" type="range" min="0.45" max="1.2" step="0.01" value="1.0">
+            <div class="full inline"><label>Area overhead: utilization/routing/library effects</label><span class="range-value" id="areaOverheadVal">100%</span></div>
+            <input class="full" id="areaOverhead" type="range" min="0.75" max="1.55" step="0.01" value="1.0">
+            <div class="full inline"><label>Power guardband: voltage/activity/PVT correction</label><span class="range-value" id="powerGuardVal">100%</span></div>
+            <input class="full" id="powerGuard" type="range" min="0.65" max="1.65" step="0.01" value="1.0">
+          </div>
+        </div>
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--green);box-shadow:0 0 18px var(--green)"></span>Yield & Cost</h3>
+          <div class="form-grid">
+            <div><label>Wafer Diameter / mm</label><input id="waferDiameter" type="number" min="100" step="1" value="300"></div>
+            <div><label>Package + Test / $ per die</label><input id="pkgTest" type="number" min="0" step="0.1" value="2.0"></div>
+            <div><label>NRE Amortization / $</label><input id="nre" type="number" min="0" step="1000000" value="0"></div>
+            <div><label>Production Volume</label><input id="volume" type="number" min="1" step="1000" value="1000000"></div>
+            <div class="full inline"><label>Line Yield / Parametric Yield</label><span class="range-value" id="lineYieldVal">95%</span></div>
+            <input class="full" id="lineYield" type="range" min="0.5" max="1" step="0.005" value="0.95">
+            <div class="full inline"><label>Defect clustering α, higher is closer to Poisson</label><span class="range-value" id="alphaVal">3.0</span></div>
+            <input class="full" id="alpha" type="range" min="0.6" max="8" step="0.1" value="3">
+            <div class="full inline"><label>D0 multiplier: defect-density calibration</label><span class="range-value" id="d0MultVal">1.00×</span></div>
+            <input class="full" id="d0Mult" type="range" min="0.25" max="3.0" step="0.05" value="1">
+            <div class="full inline"><label>Wafer cost multiplier: quote/region/customer calibration</label><span class="range-value" id="costMultVal">1.00×</span></div>
+            <input class="full" id="costMult" type="range" min="0.5" max="2.0" step="0.05" value="1">
+          </div>
+          <div class="toggle-row">
+            <label class="toggle"><input type="checkbox" id="includeLow" checked>Include low-confidence extrapolated nodes in charts</label>
+            <label class="toggle"><input type="checkbox" id="showSameFreq" checked>Show same-frequency power</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="target" class="section">
+      <div class="section-title"><h2>Target Node Results</h2><div class="hint" id="resultCaption">—</div></div>
+      <div class="cards">
+        <div class="metric-card"><div class="metric-label">Logic Area <span id="areaBadge" class="badge">—</span></div><div class="metric-value" id="logicAreaOut">—</div><div class="metric-foot" id="logicAreaFoot">—</div></div>
+        <div class="metric-card"><div class="metric-label">SRAM Area</div><div class="metric-value" id="sramAreaOut">—</div><div class="metric-foot" id="sramAreaFoot">—</div></div>
+        <div class="metric-card"><div class="metric-label">Converged Frequency</div><div class="metric-value" id="freqOut">—</div><div class="metric-foot" id="freqFoot">—</div></div>
+        <div class="metric-card"><div class="metric-label">Power @ Converged Frequency</div><div class="metric-value" id="powerConvOut">—</div><div class="metric-foot" id="powerConvFoot">—</div></div>
+        <div class="metric-card"><div class="metric-label">Yield</div><div class="metric-value" id="yieldOut">—</div><div class="metric-foot" id="yieldFoot">—</div></div>
+        <div class="metric-card"><div class="metric-label">Cost / Good Die</div><div class="metric-value" id="costOut">—</div><div class="metric-foot" id="costFoot">—</div></div>
+      </div>
+    </section>
+
+    <section id="charts" class="section">
+      <div class="section-title"><h2>Trend Charts</h2><div class="hint">A smaller node label is not necessarily a physically equivalent process across foundries. This is an early estimator, not a replacement for PDK/cell-library evaluation.</div></div>
+      <div class="results-layout">
+        <div class="panel">
+          <h3><span class="tag-dot"></span>Foundry Trends: Area / Power / Frequency / Cost</h3>
+          <div class="chart-toolbar" id="metricChips">
+            <button class="chip active" data-metric="area">Total Area</button>
+            <button class="chip" data-metric="powerConv">Converged Power</button>
+            <button class="chip" data-metric="powerSame">Same-Frequency Power</button>
+            <button class="chip" data-metric="freq">Converged Frequency</button>
+            <button class="chip" data-metric="yield">Yield</button>
+            <button class="chip" data-metric="cost">Cost</button>
+            <button class="chip" data-metric="density">Logic Density</button>
+          </div>
+          <div class="chart-box"><canvas id="trendChart"></canvas></div>
+          <div class="watermark">Canvas chart · no external JS dependency</div>
+        </div>
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--pink);box-shadow:0 0 18px var(--pink)"></span>Around the Target Node</h3>
+          <div class="chart-box"><canvas id="radarChart"></canvas></div>
+          <div class="small">Radar scores are normalized: lower is better for area/power/cost, higher is better for frequency/yield. Visual comparison only; not a signoff metric.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="nearby" class="section">
+      <div class="section-title"><h2>Target & Nearby Nodes</h2><div class="hint">Nearby nodes are selected along the nominal 28→16→14→12→10→7→6→5→4→3→2 sequence.</div></div>
+      <div class="panel">
+        <div class="table-wrap"><table id="nearbyTable"></table></div>
+      </div>
+    </section>
+
+    <section id="compare" class="section">
+      <div class="section-title"><h2>Same-Label Node Foundry Comparison</h2><div class="hint">Same nm labels are not the same physical dimension. Values here are normalized estimates within each foundry family.</div></div>
+      <div class="comparison">
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--yellow);box-shadow:0 0 18px var(--yellow)"></span>Target Node Cross-Foundry Table</h3>
+          <div class="table-wrap"><table id="compareTable"></table></div>
+        </div>
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--blue);box-shadow:0 0 18px var(--blue)"></span>Target Node Cross-Foundry Bar Chart</h3>
+          <div class="chart-box bar-chart-box"><canvas id="barChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="data" class="section">
+      <div class="section-title"><h2>Built-in Node Library</h2><div class="hint">High: public PPA or strong literature anchor; Medium: official description plus interpolation; Low: roadmap/rumor/extrapolation placeholder only.</div></div>
+      <div class="panel">
+        <div class="table-wrap"><table id="dataTable"></table></div>
+      </div>
+    </section>
+
+    <section id="sources" class="section">
+      <div class="section-title"><h2>Model Sources & Limits</h2><div class="hint">Numbers in this page are default estimation parameters, not foundry quotes or PDK signoff results.</div></div>
+      <div class="source-grid">
+        <div class="source"><b>Method Backbone: Scaling Factors</b>Based on Stillmaker & Baas 2017 CMOS scaling equations and the DeepScaleTool 2021 idea of fitting PPAC trends from public silicon data, then converting a design with scaling factors. This page implements three normalized factor groups: relative density, same-frequency energy, and converged frequency.</div>
+        <div class="source"><b>TSMC</b>Default N7/N6, N5/N4, N3, and N2 PPA anchors come from public TSMC pages/releases. N2 SRAM defaults use the roughly 38 Mb/mm² SRAM macro figure reported by TSMC Research. Less-public 16/14/12/10nm points are interpolated.</div>
+        <div class="source"><b>Samsung</b>Default SF7, SF5, SF4, and SF3 PPA anchors come from Samsung Foundry logic-node pages and releases. SF2 is treated as a roadmap-level estimate.</div>
+        <div class="source"><b>Intel</b>Default Intel 4, Intel 3, and Intel 18A factors come from public Intel Foundry materials. Nominal 14/10/7/6/5/4/3/2nm labels map to Intel 14, 10SF/Intel 7, Intel 4, Intel 3, and 18A classes; they are not exact nm equivalents.</div>
+        <div class="source"><b>SMIC</b>28nm, 14nm, and N+1/N+2-class points are anchored to public reporting and known service nodes. Below 10nm there is insufficient public PDK/PPA data; 6/5/4/3/2nm entries are low-confidence placeholders for sensitivity studies.</div>
+        <div class="source"><b>Cost / Yield</b>Yield uses a negative-binomial model. Cost uses gross dies per wafer, die yield, line yield, package/test, and NRE amortization. Wafer cost and D0 are adjustable defaults; real pricing depends on customer, capacity, region, masks, IP, test, and yield ramp.</div>
+      </div>
+      <p class="small" style="margin-top:14px">Recommended use: use this tool for early architecture/technology trade-offs. During a real project, replace defaults with the target foundry PDK, standard-cell library, SRAM compiler, floorplan, STA, power, IR-drop, and thermal signoff results.</p>
+    </section>
+    <div class="footer-credit"><b>Author:</b> Liangdacheng with GPT5.5</div>
+  </div>
+  <div id="toast" class="toast">Copied</div>
+
+<script>
+const NODE_ORDER = [28,16,14,12,10,7,6,5,4,3,2];
+const FOUND_ORD = ["TSMC","Samsung","Intel","SMIC"];
+const COLORS = {TSMC:"#39d9ff", Samsung:"#ff4fd8", Intel:"#7c8cff", SMIC:"#39f5a6"};
+const CONF_LABEL = {high:"High", medium:"Medium", low:"Low", alias:"Alias"};
+const DATA = {
+  TSMC:{
+    28:{label:"N28", density:1.00, speed:1.00, energy:1.00, sram:5.75, vdd:.90, wafer:3000, d0:.08, conf:"high", note:"Public mature node; used as this tool’s 28nm normalized baseline."},
+    16:{label:"N16/N16FF", density:2.00, speed:1.50, energy:.40, sram:10.45, vdd:.80, wafer:6000, d0:.10, conf:"medium", note:"Anchored by DeepScaleTool/public silicon trends; official N7 density is about 3× N16."},
+    14:{label:"N16FFC/14-class", density:2.15, speed:1.55, energy:.38, sram:10.90, vdd:.80, wafer:6100, d0:.10, conf:"alias", note:"TSMC has no mainstream 14nm-named node; interpolated using a 16FFC/14-class alias."},
+    12:{label:"N12FFC", density:2.40, speed:1.65, energy:.34, sram:12.0, vdd:.78, wafer:6500, d0:.11, conf:"medium", note:"TSMC 12FFC+ is publicly described as improving gate density/speed/power; values are interpolated between N16 and N10/N7."},
+    10:{label:"N10", density:3.00, speed:1.80, energy:.30, sram:15.0, vdd:.76, wafer:8000, d0:.13, conf:"medium", note:"Short-lived node; density and efficiency are used as an intermediate point between 16 and 7."},
+    7:{label:"N7", density:6.00, speed:1.95, energy:.18, sram:27.1, vdd:.72, wafer:9500, d0:.15, conf:"high", note:"TSMC public anchor: N7 vs N16 is about 3× logic density, 30% speed gain, and 55% power saving."},
+    6:{label:"N6", density:7.08, speed:1.98, energy:.18, sram:28.5, vdd:.72, wafer:10000, d0:.14, conf:"medium", note:"N6 is treated as an N7-compatible shrink; public material commonly cites about 18% logic-density improvement."},
+    5:{label:"N5", density:10.80, speed:2.24, energy:.126, sram:34.8, vdd:.70, wafer:17000, d0:.17, conf:"high", note:"N5 vs N7 uses public anchors of 1.8× density, 15% speed gain, or 30% power reduction."},
+    4:{label:"N4P", density:11.45, speed:2.49, energy:.098, sram:35.0, vdd:.70, wafer:18000, d0:.16, conf:"high", note:"N4P public anchor: about 11% performance, 22% power efficiency, and 6% density improvement vs N5."},
+    3:{label:"N3E", density:17.28, speed:2.69, energy:.088, sram:34.6, vdd:.68, wafer:21000, d0:.20, conf:"high", note:"N3E public anchor: about 20% speed, >30% power saving, and 1.6× logic density vs N5. SRAM scaling slows down."},
+    2:{label:"N2/N2P", density:20.74, speed:3.17, energy:.056, sram:38.1, vdd:.65, wafer:30000, d0:.24, conf:"high", note:"N2/N2P uses about 1.2× density, 18% speed gain, and 36% power reduction vs N3E; SRAM macro is about 38 Mb/mm²."}
+  },
+  Samsung:{
+    28:{label:"28nm", density:1.00, speed:1.00, energy:1.00, sram:5.5, vdd:.90, wafer:2600, d0:.10, conf:"high", note:"Samsung 28nm mature node, used as the normalized baseline."},
+    16:{label:"14/16-class", density:1.80, speed:1.38, energy:.50, sram:9.5, vdd:.82, wafer:4500, d0:.14, conf:"alias", note:"Samsung mainstream FinFET generation is 14LPE/LPP; 16nm is treated as a 14/16-class estimate."},
+    14:{label:"14LPP", density:2.05, speed:1.48, energy:.44, sram:10.4, vdd:.80, wafer:5000, d0:.15, conf:"high", note:"Samsung 14nm FinFET is a public mature node; PPA relative to 28nm is model-estimated."},
+    12:{label:"11/12-class", density:2.35, speed:1.58, energy:.39, sram:11.8, vdd:.78, wafer:6000, d0:.17, conf:"medium", note:"Interpolated as a Samsung 11LPP/12-class point."},
+    10:{label:"10LPE/LPP", density:3.00, speed:1.75, energy:.32, sram:15.0, vdd:.75, wafer:7500, d0:.20, conf:"medium", note:"10nm FinFET node, used as the predecessor anchor for SF7 PPA."},
+    7:{label:"7LPP/SF7", density:4.20, speed:2.10, energy:.16, sram:24.0, vdd:.72, wafer:8500, d0:.25, conf:"high", note:"Samsung public anchor: 7LPP vs 10nm offers up to 40% area efficiency, 20% performance, or 50% power reduction."},
+    6:{label:"6LPP", density:4.55, speed:2.16, energy:.15, sram:25.5, vdd:.72, wafer:9000, d0:.24, conf:"medium", note:"6LPP is estimated as an evolution of 7LPP."},
+    5:{label:"SF5/5LPE", density:5.25, speed:2.31, energy:.128, sram:28.0, vdd:.70, wafer:13000, d0:.26, conf:"high", note:"Samsung public anchor: 5nm vs 7nm gives 25% logic area efficiency, 20% lower power, or 10% higher performance."},
+    4:{label:"SF4/4LPP", density:6.20, speed:2.55, energy:.110, sram:29.5, vdd:.70, wafer:14000, d0:.22, conf:"medium", note:"SF4 public materials emphasize 200nm cell height and improved performance; values are interpolated from SF5 to SF3."},
+    3:{label:"SF3", density:8.08, speed:3.00, energy:.064, sram:30.0, vdd:.68, wafer:17000, d0:.34, conf:"high", note:"Samsung public anchor: second-generation 3nm GAA vs 5nm is about 50% lower power, 30% performance gain, and 35% smaller area."},
+    2:{label:"SF2", density:9.70, speed:3.36, energy:.048, sram:32.0, vdd:.65, wafer:20000, d0:.40, conf:"low", note:"SF2 public information is mostly roadmap/qualitative PPA; values are low-confidence extrapolations."}
+  },
+  Intel:{
+    28:{label:"28-class", density:1.00, speed:1.00, energy:1.00, sram:5.7, vdd:.90, wafer:3500, d0:.10, conf:"alias", note:"Intel has no standard public foundry 28nm anchor; normalized as a 28-class point."},
+    16:{label:"14/16-class", density:1.85, speed:1.36, energy:.52, sram:9.8, vdd:.82, wafer:6200, d0:.12, conf:"alias", note:"Mapped to a pre/around-Intel-14nm 14/16-class point."},
+    14:{label:"Intel 14", density:2.05, speed:1.46, energy:.45, sram:10.8, vdd:.80, wafer:6500, d0:.12, conf:"high", note:"Intel 14nm mature production node; PPA is estimated relative to 28-class."},
+    12:{label:"14++/12-class", density:2.40, speed:1.60, energy:.39, sram:12.0, vdd:.78, wafer:7500, d0:.14, conf:"medium", note:"Intel has no mainstream 12nm-named node; interpolated using a 14++/12-class alias."},
+    10:{label:"10SF", density:4.50, speed:1.76, energy:.31, sram:18.0, vdd:.75, wafer:9000, d0:.24, conf:"medium", note:"Mapped to early/mid Intel 10nm/SuperFin."},
+    7:{label:"Intel 7", density:5.20, speed:2.00, energy:.25, sram:22.0, vdd:.72, wafer:11000, d0:.20, conf:"high", note:"Intel 7 is the renamed 10nm Enhanced SuperFin generation; it is not equivalent to TSMC/Samsung 7nm."},
+    6:{label:"Intel 6-class", density:6.40, speed:2.12, energy:.21, sram:25.0, vdd:.71, wafer:12000, d0:.20, conf:"low", note:"No mainstream public Intel 6 node; interpolated from Intel 7 to Intel 4."},
+    5:{label:"Intel 5-class", density:8.00, speed:2.25, energy:.18, sram:29.0, vdd:.70, wafer:15000, d0:.22, conf:"low", note:"No mainstream public Intel 5 node; interpolated from Intel 7 to Intel 4."},
+    4:{label:"Intel 4", density:10.40, speed:2.42, energy:.150, sram:32.0, vdd:.68, wafer:18000, d0:.24, conf:"high", note:"Intel public anchor: Intel 4 vs Intel 7 offers about 2× logic area scaling and >20% perf/W; VLSI reports cite additional iso-power/iso-frequency data."},
+    3:{label:"Intel 3", density:11.23, speed:2.85, energy:.127, sram:33.0, vdd:.66, wafer:20000, d0:.22, conf:"high", note:"Intel public anchor: Intel 3 vs Intel 4 gives about 1.08× chip density and 18% perf/W."},
+    2:{label:"18A/20A class", density:14.60, speed:3.28, energy:.110, sram:35.0, vdd:.64, wafer:23000, d0:.26, conf:"high", note:"Intel 18A public anchor: up to 15% perf/W and 30% chip density vs Intel 3; mapped to 2nm-class."}
+  },
+  SMIC:{
+    28:{label:"28HKMG", density:1.00, speed:1.00, energy:1.00, sram:5.4, vdd:.90, wafer:2200, d0:.12, conf:"high", note:"SMIC 28nm HKMG has public production history; used as the normalized baseline."},
+    16:{label:"14/16-class", density:1.75, speed:1.32, energy:.55, sram:9.0, vdd:.82, wafer:4000, d0:.22, conf:"alias", note:"SMIC 14nm FinFET is the public anchor; 16nm is treated as an alias."},
+    14:{label:"14 FinFET", density:2.00, speed:1.45, energy:.45, sram:10.0, vdd:.80, wafer:4500, d0:.25, conf:"medium", note:"Public reporting indicates SMIC 14nm FinFET production; PPA values are estimated."},
+    12:{label:"12-class", density:2.35, speed:1.55, energy:.40, sram:11.5, vdd:.78, wafer:5500, d0:.27, conf:"low", note:"SMIC 12nm lacks verifiable public PPA; interpolated placeholder."},
+    10:{label:"10-class", density:3.00, speed:1.65, energy:.33, sram:14.0, vdd:.76, wafer:6500, d0:.30, conf:"low", note:"SMIC 10nm-class lacks public mainstream production PPA; low-confidence interpolation."},
+    7:{label:"N+1/N+2 7-class", density:4.85, speed:1.74, energy:.194, sram:21.0, vdd:.74, wafer:7500, d0:.38, conf:"medium", note:"Public reports: N+1 vs 14nm has about 20% performance gain, 57% power reduction, and 55–63% logic area reduction."},
+    6:{label:"6-class extrap.", density:5.35, speed:1.86, energy:.170, sram:22.5, vdd:.73, wafer:8500, d0:.45, conf:"low", note:"Low-confidence extrapolation; no public PDK/PPA anchor."},
+    5:{label:"5-class extrap.", density:6.50, speed:2.00, energy:.140, sram:24.5, vdd:.71, wafer:12000, d0:.55, conf:"low", note:"Low-confidence extrapolation; multi-patterning DUV can strongly affect cost and yield."},
+    4:{label:"4-class extrap.", density:7.60, speed:2.15, energy:.120, sram:26.0, vdd:.70, wafer:15000, d0:.65, conf:"low", note:"Low-confidence extrapolation; use only for sensitivity analysis."},
+    3:{label:"3-class extrap.", density:9.00, speed:2.40, energy:.100, sram:28.0, vdd:.68, wafer:18000, d0:.80, conf:"low", note:"Low-confidence extrapolation; no public production PPA."},
+    2:{label:"2-class extrap.", density:11.00, speed:2.70, energy:.080, sram:30.0, vdd:.66, wafer:22000, d0:1.00, conf:"low", note:"Low-confidence extrapolation; no public production PPA. Placeholder for trend visualization."}
+  }
+};
+
+let activeMetric = "area";
+const els = {};
+const ids = ["currentFoundry","currentNode","targetFoundry","targetNode","logicArea","logicPower","frequency","otherArea","sramMbit","sramPower","freqRealization","areaOverhead","powerGuard","waferDiameter","pkgTest","nre","volume","lineYield","alpha","d0Mult","costMult","includeLow","showSameFreq"];
+ids.forEach(id=>els[id]=document.getElementById(id));
+function initSelects(){
+  [els.currentFoundry, els.targetFoundry].forEach(sel=>{sel.innerHTML=FOUND_ORD.map(f=>`<option value="${f}">${f}</option>`).join("")});
+  [els.currentNode, els.targetNode].forEach(sel=>{sel.innerHTML=NODE_ORDER.map(n=>`<option value="${n}">${n} nm</option>`).join("")});
+  els.currentFoundry.value="TSMC"; els.targetFoundry.value="TSMC"; els.currentNode.value="28"; els.targetNode.value="2";
+}
+function num(id){return Number(els[id].value)||0}
+function getInput(){
+  return {
+    currentFoundry:els.currentFoundry.value, currentNode:Number(els.currentNode.value), targetFoundry:els.targetFoundry.value, targetNode:Number(els.targetNode.value),
+    logicArea:num("logicArea"), logicPower:num("logicPower"), frequency:num("frequency"), otherArea:num("otherArea"), sramMbit:num("sramMbit"), sramPower:num("sramPower"),
+    freqRealization:num("freqRealization"), areaOverhead:num("areaOverhead"), powerGuard:num("powerGuard"), waferDiameter:num("waferDiameter"), pkgTest:num("pkgTest"), nre:num("nre"), volume:Math.max(1,num("volume")), lineYield:num("lineYield"), alpha:num("alpha"), d0Mult:num("d0Mult"), costMult:num("costMult"), includeLow:els.includeLow.checked, showSameFreq:els.showSameFreq.checked
+  };
+}
+function fmt(v, digits=2){
+  if(!isFinite(v)) return "—";
+  if(Math.abs(v)>=1000) return v.toLocaleString(undefined,{maximumFractionDigits:digits});
+  if(Math.abs(v)>=100) return v.toFixed(1);
+  if(Math.abs(v)>=10) return v.toFixed(2);
+  if(Math.abs(v)>=1) return v.toFixed(digits);
+  if(Math.abs(v)>=.01) return v.toFixed(3);
+  return v.toExponential(2);
+}
+function money(v){
+  if(!isFinite(v)) return "—";
+  if(v>=1e6) return "$"+(v/1e6).toFixed(2)+"M";
+  if(v>=1e3) return "$"+(v/1e3).toFixed(1)+"k";
+  return "$"+v.toFixed(2);
+}
+function pct(v){return (v*100).toFixed(v<.1?2:1)+"%"}
+function confBadge(conf){return `<span class="badge ${conf}"><span class="mini-dot"></span>${CONF_LABEL[conf]||conf}</span>`}
+function grossDies(area, dia){
+  if(area<=0) return 0;
+  const r = dia/2;
+  return Math.max(0, Math.PI*r*r/area - Math.PI*dia/Math.sqrt(2*area));
+}
+function calc(foundry, node, inp){
+  const cur = DATA[inp.currentFoundry][inp.currentNode];
+  const t = DATA[foundry][node];
+  const densityRatio = t.density/cur.density;
+  const logicArea = inp.logicArea/densityRatio*inp.areaOverhead;
+  const currentSramArea = inp.sramMbit>0 ? inp.sramMbit/cur.sram : 0;
+  const sramArea = inp.sramMbit>0 ? inp.sramMbit/t.sram : 0;
+  const totalArea = Math.max(0.0001, logicArea + sramArea + inp.otherArea);
+  const currentTotalArea = Math.max(0.0001, inp.logicArea + currentSramArea + inp.otherArea);
+  const freq = inp.frequency*(t.speed/cur.speed)*inp.freqRealization;
+  const freqRatio = freq/Math.max(inp.frequency,1e-9);
+  const energyRatio = (t.energy/cur.energy)*inp.powerGuard;
+  const leakFrac = 0.08;
+  const logicDyn = inp.logicPower*(1-leakFrac);
+  const logicLeak = inp.logicPower*leakFrac;
+  const leakScale = Math.max(0.08, Math.pow(Math.max(logicArea,1e-9)/Math.max(inp.logicArea,1e-9), .72) * Math.pow(t.vdd/cur.vdd, 1.2));
+  const logicPowerSame = logicDyn*energyRatio + logicLeak*leakScale;
+  const logicPowerConv = logicDyn*energyRatio*freqRatio + logicLeak*leakScale;
+  let sramPowerSame=0, sramPowerConv=0;
+  if(inp.sramMbit>0 && inp.sramPower>0){
+    sramPowerSame = inp.sramPower*(cur.sram/t.sram)*Math.pow(t.vdd/cur.vdd,2);
+    sramPowerConv = sramPowerSame*freqRatio;
+  }
+  const powerSame = logicPowerSame + sramPowerSame;
+  const powerConv = logicPowerConv + sramPowerConv;
+  const gd = grossDies(totalArea, inp.waferDiameter);
+  const d0 = t.d0*inp.d0Mult;
+  const acm2 = totalArea/100;
+  const dieYield = Math.pow(1 + d0*acm2/Math.max(inp.alpha,.001), -inp.alpha);
+  const finalYield = dieYield*inp.lineYield;
+  const waferCost = t.wafer*inp.costMult;
+  const dieMfgCost = gd>0 && finalYield>0 ? waferCost/(gd*finalYield) : Infinity;
+  const nrePerDie = inp.nre/Math.max(inp.volume,1);
+  const cost = dieMfgCost + inp.pkgTest + nrePerDie;
+  return {foundry,node,info:t, logicArea,sramArea,totalArea,currentTotalArea,freq,freqRatio,logicPowerSame,logicPowerConv,sramPowerSame,sramPowerConv,powerSame,powerConv,gd,d0,dieYield,finalYield,waferCost,dieMfgCost,nrePerDie,cost,densityRatio,energyRatio};
+}
+function nearbyNodes(target){
+  const i = NODE_ORDER.indexOf(Number(target));
+  const start=Math.max(0,i-2), end=Math.min(NODE_ORDER.length-1,i+2);
+  return NODE_ORDER.slice(start,end+1);
+}
+function updateRangeLabels(inp){
+  document.getElementById("freqRealizationVal").textContent = Math.round(inp.freqRealization*100)+"%";
+  document.getElementById("areaOverheadVal").textContent = Math.round(inp.areaOverhead*100)+"%";
+  document.getElementById("powerGuardVal").textContent = Math.round(inp.powerGuard*100)+"%";
+  document.getElementById("lineYieldVal").textContent = Math.round(inp.lineYield*100)+"%";
+  document.getElementById("alphaVal").textContent = inp.alpha.toFixed(1);
+  document.getElementById("d0MultVal").textContent = inp.d0Mult.toFixed(2)+"×";
+  document.getElementById("costMultVal").textContent = inp.costMult.toFixed(2)+"×";
+}
+function updateCards(inp, r){
+  document.getElementById("miniTarget").textContent = `${r.foundry} ${r.info.label}`;
+  document.getElementById("miniConfidence").innerHTML = `${CONF_LABEL[r.info.conf]} · ${r.node}nm class`;
+  document.getElementById("miniShrink").textContent = (r.currentTotalArea/r.totalArea).toFixed(1)+"×";
+  document.getElementById("miniFreq").textContent = (r.freq/Math.max(inp.frequency,1e-9)).toFixed(2)+"×";
+  document.getElementById("miniCost").textContent = money(r.cost);
+  document.getElementById("logicAreaOut").textContent = fmt(r.logicArea)+" mm²";
+  document.getElementById("logicAreaFoot").textContent = `Logic density vs current ${r.densityRatio.toFixed(2)}×; Area ratio ${(r.logicArea/Math.max(inp.logicArea,1e-9)).toFixed(3)}×`;
+  document.getElementById("sramAreaOut").textContent = fmt(r.sramArea)+" mm²";
+  document.getElementById("sramAreaFoot").textContent = inp.sramMbit>0 ? `${inp.sramMbit} Mbit / ${fmt(r.info.sram)} Mb/mm²` : "No SRAM capacity entered; treated as 0";
+  document.getElementById("freqOut").textContent = fmt(r.freq)+" GHz";
+  document.getElementById("freqFoot").textContent = `Relative to current ${(r.freq/Math.max(inp.frequency,1e-9)).toFixed(2)}×, with realization factor ${Math.round(inp.freqRealization*100)}%`;
+  document.getElementById("powerConvOut").textContent = fmt(r.powerConv)+" W";
+  const same = inp.showSameFreq ? `; same-frequency ${fmt(r.powerSame)} W` : "";
+  document.getElementById("powerConvFoot").textContent = `Same-function energy ratio ${r.energyRatio.toFixed(3)}×, frequency ratio ${r.freqRatio.toFixed(2)}×${same}`;
+  document.getElementById("yieldOut").textContent = pct(r.finalYield);
+  document.getElementById("yieldFoot").textContent = `D0 = ${r.d0.toFixed(3)} /cm², gross dies ≈ ${Math.floor(r.gd).toLocaleString()}, die yield ${pct(r.dieYield)}`;
+  document.getElementById("costOut").textContent = money(r.cost);
+  document.getElementById("costFoot").textContent = `wafer ${money(r.waferCost)}, mfg ${money(r.dieMfgCost)}, NRE ${money(r.nrePerDie)}/die`;
+  document.getElementById("areaBadge").innerHTML = confBadge(r.info.conf);
+  document.getElementById("resultCaption").textContent = `Current ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} → Target ${r.foundry} ${r.info.label}, Total Area ${fmt(r.totalArea)} mm².`;
+  document.getElementById("selectedNote").innerHTML = `${confBadge(r.info.conf)} <b>${r.foundry} ${r.info.label}</b>: ${r.info.note}<br><span class="small">Default wafer cost = ${money(r.info.wafer)}, D0 = ${r.info.d0}/cm², SRAM density=${fmt(r.info.sram)} Mb/mm².</span>`;
+}
+function rowClass(r, inp){return `${r.node===inp.targetNode&&r.foundry===inp.targetFoundry?'target-row ':''}${r.info.conf==='low'?'low-row':''}`}
+function buildTable(headers, rows){
+  return `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody>`;
+}
+function updateNearby(inp){
+  const nodes = nearbyNodes(inp.targetNode);
+  const rows = nodes.map(n=>{
+    const r=calc(inp.targetFoundry,n,inp);
+    return `<tr class="${rowClass(r,inp)}"><td>${n} nm</td><td>${r.info.label} ${confBadge(r.info.conf)}</td><td>${fmt(r.info.density)}×</td><td>${fmt(r.logicArea)}</td><td>${fmt(r.sramArea)}</td><td>${fmt(r.totalArea)}</td><td>${fmt(r.freq)}</td><td>${fmt(r.powerConv)}</td><td>${pct(r.finalYield)}</td><td>${money(r.cost)}</td></tr>`;
+  });
+  document.getElementById("nearbyTable").innerHTML = buildTable(["Node","Process / Confidence","Logic Density","Logic Area mm²","SRAM mm²","Total Area mm²","Frequency GHz","Power W","Yield","Cost"], rows);
+}
+function updateCompare(inp){
+  const rows = FOUND_ORD.map(f=>{
+    const r=calc(f,inp.targetNode,inp);
+    return `<tr class="${r.info.conf==='low'?'low-row':''}"><td>${f}</td><td>${r.info.label} ${confBadge(r.info.conf)}</td><td>${fmt(r.totalArea)}</td><td>${fmt(r.powerConv)}</td><td>${fmt(r.freq)}</td><td>${pct(r.finalYield)}</td><td>${money(r.cost)}</td><td>${r.info.note}</td></tr>`;
+  });
+  document.getElementById("compareTable").innerHTML = buildTable(["Foundry","Process","Total Area mm²","Converged Power W","Frequency GHz","Yield","Cost","Notes"], rows);
+}
+function updateDataTable(){
+  const rows=[];
+  for(const f of FOUND_ORD){
+    for(const n of NODE_ORDER){
+      const d=DATA[f][n];
+      rows.push(`<tr class="${d.conf==='low'?'low-row':''}"><td>${f}</td><td>${n} nm</td><td>${d.label} ${confBadge(d.conf)}</td><td>${fmt(d.density)}</td><td>${fmt(d.speed)}</td><td>${fmt(d.energy)}</td><td>${fmt(d.sram)}</td><td>${fmt(d.vdd)}</td><td>${money(d.wafer)}</td><td>${d.d0.toFixed(3)}</td><td>${d.note}</td></tr>`);
+    }
+  }
+  document.getElementById("dataTable").innerHTML = buildTable(["Foundry","Node","Process","Density ×28","Frequency ×28","Same-Freq Energy ×28","SRAM Mb/mm²","VDD","Wafer","D0","Notes"], rows);
+}
+function metricValue(r, metric){
+  switch(metric){
+    case "area": return r.totalArea;
+    case "powerConv": return r.powerConv;
+    case "powerSame": return r.powerSame;
+    case "freq": return r.freq;
+    case "yield": return r.finalYield*100;
+    case "cost": return r.cost;
+    case "density": return r.info.density;
+    default: return r.totalArea;
+  }
+}
+function metricLabel(metric){return {area:"Total Area / mm²", powerConv:"Power @ Converged Frequency / W", powerSame:"Same-Frequency Power / W", freq:"Converged Frequency / GHz", yield:"Total Yield / %", cost:"Cost per good die / $", density:"Logic Density / ×28nm"}[metric]||metric}
+function metricFmt(metric,v){
+  if(metric==="cost") return money(v);
+  if(metric==="yield") return v.toFixed(1)+"%";
+  if(metric==="density") return v.toFixed(1)+"×";
+  return fmt(v);
+}
+function setupCanvas(canvas){
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(rect.width*dpr));
+  canvas.height = Math.max(1, Math.floor(rect.height*dpr));
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w:rect.width,h:rect.height};
+}
+function drawTrend(inp){
+  const canvas=document.getElementById("trendChart"); const {ctx,w,h}=setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const pad={l:62,r:24,t:24,b:58};
+  const nodes = NODE_ORDER.filter(n=> inp.includeLow || FOUND_ORD.some(f=>DATA[f][n].conf!=="low"));
+  const series = FOUND_ORD.map(f=>{
+    const vals = nodes.map(n=>metricValue(calc(f,n,inp),activeMetric));
+    return {name:f, vals, color:COLORS[f]};
+  });
+  let vals=series.flatMap(s=>s.vals).filter(isFinite);
+  let min=Math.min(...vals), max=Math.max(...vals);
+  if(activeMetric==="yield"){min=Math.max(0,min*.92); max=Math.min(100, max*1.05)} else {min=Math.max(0,min*.9); max=max*1.12}
+  if(max===min){max+=1;min-=1}
+  const x=i=>pad.l + (w-pad.l-pad.r)*(i/(nodes.length-1));
+  const y=v=>pad.t + (h-pad.t-pad.b)*(1-(v-min)/(max-min));
+  // background grid
+  ctx.strokeStyle="rgba(148,163,184,.14)"; ctx.lineWidth=1; ctx.font="12px Inter, sans-serif"; ctx.fillStyle="#9fb0c9";
+  for(let g=0; g<=4; g++){
+    const yy=pad.t+(h-pad.t-pad.b)*g/4; ctx.beginPath(); ctx.moveTo(pad.l,yy); ctx.lineTo(w-pad.r,yy); ctx.stroke();
+    const val=max-(max-min)*g/4; ctx.fillText(metricFmt(activeMetric,val),10,yy+4);
+  }
+  nodes.forEach((n,i)=>{const xx=x(i); ctx.fillStyle=n===inp.targetNode?"#eafaff":"#8ea2bd"; ctx.fillText(n+"nm",xx-14,h-24); if(n===inp.targetNode){ctx.strokeStyle="rgba(57,217,255,.35)"; ctx.beginPath(); ctx.moveTo(xx,pad.t); ctx.lineTo(xx,h-pad.b+18); ctx.stroke();}});
+  ctx.fillStyle="#ddecff"; ctx.font="bold 13px Inter, sans-serif"; ctx.fillText(metricLabel(activeMetric),pad.l,pad.t-6);
+  series.forEach(s=>{
+    ctx.strokeStyle=s.color; ctx.lineWidth=s.name===inp.targetFoundry?3:2; ctx.beginPath();
+    s.vals.forEach((v,i)=>{const xx=x(i), yy=y(v); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy)}); ctx.stroke();
+    s.vals.forEach((v,i)=>{const xx=x(i), yy=y(v); ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(xx,yy,s.name===inp.targetFoundry?4:3,0,Math.PI*2); ctx.fill();});
+  });
+  // legend
+  let lx=pad.l, ly=h-10; ctx.font="12px Inter, sans-serif";
+  series.forEach(s=>{ctx.fillStyle=s.color; ctx.fillRect(lx,ly-10,10,10); ctx.fillStyle="#cbd9ec"; ctx.fillText(s.name,lx+15,ly); lx+=82;});
+}
+function drawBar(inp){
+  const canvas=document.getElementById("barChart");
+  const {ctx,w,h}=setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const metrics=[
+    {key:"area", label:"Area", lowGood:true},
+    {key:"powerConv", label:"Power", lowGood:true},
+    {key:"freq", label:"Frequency", lowGood:false},
+    {key:"yield", label:"Yield", lowGood:false},
+    {key:"cost", label:"Cost", lowGood:true}
+  ];
+  const rows=FOUND_ORD.map(f=>calc(f,inp.targetNode,inp));
+  const compact=w<620;
+  const tiny=w<460;
+  const pad={
+    l: tiny?72:(compact?92:118),
+    r: tiny?14:(compact?18:26),
+    t: tiny?58:56,
+    b: tiny?30:36
+  };
+  const plotW=Math.max(120,w-pad.l-pad.r);
+  const plotX=pad.l;
+  const plotR=plotX+plotW;
+
+  ctx.save();
+  ctx.fillStyle="#ddecff";
+  ctx.font=`bold ${tiny?12:13}px Inter, sans-serif`;
+  const title=`${inp.targetNode}nm-class cross-foundry comparison`;
+  ctx.fillText(title, plotX, 23, plotW);
+  ctx.fillStyle="#8ea2bd";
+  ctx.font=`${tiny?10:11}px Inter, sans-serif`;
+  ctx.fillText("Normalized score per metric; longer is better", plotX, 39, plotW);
+
+  ctx.strokeStyle="rgba(148,163,184,.14)";
+  ctx.lineWidth=1;
+  for(let g=0; g<=4; g++){
+    const gx=plotX+plotW*g/4;
+    ctx.beginPath(); ctx.moveTo(gx,pad.t-8); ctx.lineTo(gx,h-pad.b+6); ctx.stroke();
+  }
+
+  const rowH=(h-pad.t-pad.b)/metrics.length;
+  const seriesGap=tiny?3:4;
+  metrics.forEach((m,mi)=>{
+    const all=rows.map(r=>metricValue(r,m.key));
+    const mn=Math.min(...all), mx=Math.max(...all);
+    const yBase=pad.t+mi*rowH;
+    const labelY=yBase+Math.min(rowH*.46, 32);
+    ctx.fillStyle="#cbd9ec";
+    ctx.font=`bold ${tiny?11:12}px Inter, sans-serif`;
+    ctx.fillText(m.label, 12, labelY, pad.l-18);
+    ctx.fillStyle="#7f91ad";
+    ctx.font=`${tiny?9:10}px Inter, sans-serif`;
+    ctx.fillText(m.lowGood ? "lower better" : "higher better", 12, labelY+14, pad.l-18);
+
+    const barH=Math.max(7, Math.min(tiny?12:14, (rowH-18)/(FOUND_ORD.length+0.5)));
+    const blockH=barH+seriesGap;
+    const startY=yBase+Math.max(8,(rowH-(FOUND_ORD.length*blockH))/2);
+    FOUND_ORD.forEach((f,fi)=>{
+      const r=rows[fi];
+      const raw=metricValue(r,m.key);
+      let sc=(raw-mn)/(mx-mn || 1);
+      if(m.lowGood) sc=1-sc;
+      sc=Math.max(0.08, Math.min(1, 0.08+0.92*sc));
+      const y=startY+fi*blockH;
+      ctx.fillStyle="rgba(255,255,255,.065)";
+      roundRect(ctx,plotX,y,plotW,barH,6,true,false);
+      ctx.fillStyle=COLORS[f];
+      ctx.globalAlpha=f===inp.targetFoundry?.88:.62;
+      roundRect(ctx,plotX,y,plotW*sc,barH,6,true,false);
+      ctx.globalAlpha=1;
+
+      const value = m.key==="yield" ? raw.toFixed(1)+"%" : (m.key==="cost" ? money(raw) : fmt(raw));
+      const txt = `${f} · ${value}`;
+      ctx.font=`${tiny?9:10}px Inter, sans-serif`;
+      const textW=Math.min(ctx.measureText(txt).width, compact?90:118);
+      let tx=plotX+plotW*sc+6;
+      if(tx+textW>plotR-4) tx=plotR-textW-4;
+      if(tx<plotX+4) tx=plotX+4;
+      ctx.fillStyle=f===inp.targetFoundry?"#eef6ff":"#aebbd0";
+      ctx.fillText(txt, tx, y+barH-1, Math.max(44, plotR-tx-4));
+    });
+  });
+
+  // Legend is clipped to the plot width; on narrow screens it becomes two compact rows inside the canvas.
+  ctx.font=`${tiny?10:11}px Inter, sans-serif`;
+  const itemW=tiny?70:Math.min(92, Math.max(72, plotW/4));
+  const perRow=Math.max(1, Math.floor(plotW/itemW));
+  FOUND_ORD.forEach((f,i)=>{
+    const row=Math.floor(i/perRow), col=i%perRow;
+    const lx=plotX+col*itemW;
+    const ly=h-18-row*15;
+    ctx.fillStyle=COLORS[f]; ctx.fillRect(lx,ly-9,9,9);
+    ctx.fillStyle="#cbd9ec"; ctx.fillText(f,lx+14,ly,Math.max(42,itemW-16));
+  });
+  ctx.restore();
+}
+function roundRect(ctx,x,y,w,h,r,fill,stroke){
+  if(w<0){x+=w;w=-w} if(h<0){y+=h;h=-h} r=Math.min(r,w/2,h/2);
+  ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill)ctx.fill(); if(stroke)ctx.stroke();
+}
+function drawRadar(inp){
+  const canvas=document.getElementById("radarChart"); const {ctx,w,h}=setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const nodes=nearbyNodes(inp.targetNode);
+  const center={x:w/2,y:h/2+10}; const R=Math.min(w,h)*.31;
+  const labels=["Area↓","Power↓","Freq↑","Yield↑","Cost↓"];
+  const axes=labels.length;
+  ctx.strokeStyle="rgba(148,163,184,.18)"; ctx.fillStyle="#9fb0c9"; ctx.font="12px Inter, sans-serif";
+  for(let ring=1;ring<=4;ring++){
+    ctx.beginPath();
+    for(let i=0;i<axes;i++){const a=-Math.PI/2+i*2*Math.PI/axes; const rr=R*ring/4; const x=center.x+Math.cos(a)*rr, y=center.y+Math.sin(a)*rr; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)} ctx.closePath(); ctx.stroke();
+  }
+  for(let i=0;i<axes;i++){const a=-Math.PI/2+i*2*Math.PI/axes; ctx.beginPath();ctx.moveTo(center.x,center.y);ctx.lineTo(center.x+Math.cos(a)*R,center.y+Math.sin(a)*R);ctx.stroke(); ctx.fillText(labels[i],center.x+Math.cos(a)*(R+24)-18,center.y+Math.sin(a)*(R+24)+4)}
+  const rows=nodes.map(n=>calc(inp.targetFoundry,n,inp));
+  const maxima={area:Math.max(...rows.map(r=>r.totalArea)), power:Math.max(...rows.map(r=>r.powerConv)), freq:Math.max(...rows.map(r=>r.freq)), yield:Math.max(...rows.map(r=>r.finalYield)), cost:Math.max(...rows.map(r=>r.cost))};
+  const minima={area:Math.min(...rows.map(r=>r.totalArea)), power:Math.min(...rows.map(r=>r.powerConv)), freq:Math.min(...rows.map(r=>r.freq)), yield:Math.min(...rows.map(r=>r.finalYield)), cost:Math.min(...rows.map(r=>r.cost))};
+  function sc(v,min,max,highGood){let s=(v-min)/(max-min||1); if(!highGood)s=1-s; return .15+.85*s;}
+  rows.forEach((r,idx)=>{
+    const vals=[sc(r.totalArea,minima.area,maxima.area,false), sc(r.powerConv,minima.power,maxima.power,false), sc(r.freq,minima.freq,maxima.freq,true), sc(r.finalYield,minima.yield,maxima.yield,true), sc(r.cost,minima.cost,maxima.cost,false)];
+    const color=idx===nodes.indexOf(inp.targetNode)?"#39d9ff":`rgba(177,92,255,${.28+idx*.12})`;
+    ctx.beginPath(); vals.forEach((v,i)=>{const a=-Math.PI/2+i*2*Math.PI/axes; const x=center.x+Math.cos(a)*R*v, y=center.y+Math.sin(a)*R*v; if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}); ctx.closePath(); ctx.fillStyle=color; ctx.globalAlpha=idx===nodes.indexOf(inp.targetNode)?.22:.09; ctx.fill(); ctx.globalAlpha=1; ctx.strokeStyle=color; ctx.lineWidth=idx===nodes.indexOf(inp.targetNode)?3:1.5; ctx.stroke();
+  });
+  let lx=16, ly=24; ctx.font="12px Inter, sans-serif"; rows.forEach((r,idx)=>{ctx.fillStyle=idx===nodes.indexOf(inp.targetNode)?"#39d9ff":"#b15cff"; ctx.fillRect(lx,ly-9,9,9); ctx.fillStyle="#cbd9ec"; ctx.fillText(`${r.node}nm`,lx+14,ly); lx+=62;});
+}
+function updateCharts(inp){drawTrend(inp); drawBar(inp); drawRadar(inp)}
+function update(){
+  const inp=getInput(); updateRangeLabels(inp);
+  const r=calc(inp.targetFoundry,inp.targetNode,inp);
+  updateCards(inp,r); updateNearby(inp); updateCompare(inp); updateCharts(inp);
+}
+function toast(msg){const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800)}
+function currentSummary(){
+  const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp);
+  return `CMOS PPAC Scaling: ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} -> ${r.foundry} ${r.info.label}\nAuthor: Liangdacheng with GPT5.5\nLogic Area: ${fmt(inp.logicArea)} -> ${fmt(r.logicArea)} mm²\nTotal Area: ${fmt(r.currentTotalArea)} -> ${fmt(r.totalArea)} mm²\nFrequency: ${fmt(inp.frequency)} -> ${fmt(r.freq)} GHz\nPower @ converged frequency: ${fmt(inp.logicPower)} -> ${fmt(r.powerConv)} W\nYield: ${pct(r.finalYield)}\nCost/good die: ${money(r.cost)}\nNotes: ${r.info.note}`;
+}
+function exportCSV(){
+  const inp=getInput();
+  let rows=[["foundry","node_nm","process","confidence","logic_density_x28","logic_area_mm2","sram_area_mm2","total_area_mm2","freq_ghz","power_same_freq_w","power_conv_w","yield","gross_dies","wafer_cost_usd","cost_good_die_usd","note"]];
+  for(const f of FOUND_ORD){for(const n of NODE_ORDER){const r=calc(f,n,inp); if(!inp.includeLow && r.info.conf==='low') continue; rows.push([f,n,r.info.label,r.info.conf,r.info.density,r.logicArea,r.sramArea,r.totalArea,r.freq,r.powerSame,r.powerConv,r.finalYield,r.gd,r.waferCost,r.cost,r.info.note]);}}
+  const csv=rows.map(row=>row.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="cmos_scaling_results.csv"; a.click(); URL.revokeObjectURL(a.href); toast("CSV exported");
+}
+function bind(){
+  ids.forEach(id=>els[id].addEventListener(id==="includeLow"||id==="showSameFreq"?"change":"input", update));
+  [els.currentFoundry,els.currentNode,els.targetFoundry,els.targetNode].forEach(e=>e.addEventListener("change", update));
+  document.getElementById("metricChips").addEventListener("click",e=>{if(e.target.matches(".chip")){document.querySelectorAll("#metricChips .chip").forEach(c=>c.classList.remove("active")); e.target.classList.add("active"); activeMetric=e.target.dataset.metric; update();}});
+  document.getElementById("btnCopy").addEventListener("click", async()=>{try{await navigator.clipboard.writeText(currentSummary()); toast("Summary copied")}catch(e){toast("Copy failed; please select manually")}});
+  document.getElementById("btnExport").addEventListener("click", exportCSV);
+  window.addEventListener("resize", ()=>updateCharts(getInput()));
+}
+initSelects(); bind(); updateDataTable(); update();
+</script>
+</body>
+</html>
