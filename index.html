@@ -137,15 +137,25 @@
     .badge.high{border-color:rgba(57,245,166,.34); color:#c9ffec; background:rgba(57,245,166,.08)}
     .badge.medium{border-color:rgba(255,226,122,.36); color:#fff0ae; background:rgba(255,226,122,.08)}
     .badge.low{border-color:rgba(255,107,122,.36); color:#ffd0d6; background:rgba(255,107,122,.08)}
-    .badge.alias{border-color:rgba(177,92,255,.36); color:#e2ccff; background:rgba(177,92,255,.08)}
+    .badge.roadmap{border-color:rgba(57,217,255,.40); color:#c8f5ff; background:rgba(57,217,255,.09)}
     .badge .mini-dot{width:6px;height:6px;border-radius:50%; background:currentColor; box-shadow:0 0 10px currentColor}
     .results-layout{display:grid; grid-template-columns:1.2fr .8fr; gap:16px}
     .chart-box{height:420px; position:relative; padding:14px; border:1px solid var(--stroke); border-radius:24px; background:rgba(7,11,25,.52); overflow:hidden}
     .bar-chart-box{height:500px; min-height:500px}
     .chart-box canvas{width:100%; height:100%; display:block}
-    .chart-toolbar{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px}
-    .chip{border:1px solid var(--stroke); color:#c9d7ec; background:rgba(255,255,255,.045); border-radius:999px; padding:8px 11px; cursor:pointer; font-size:12px; font-weight:750}
+    .chart-toolbar{display:flex; flex-wrap:nowrap; gap:8px; margin-bottom:12px; overflow-x:auto; overflow-y:hidden; padding:2px 2px 8px; scroll-snap-type:x proximity; scrollbar-width:thin; scrollbar-color:rgba(57,217,255,.42) rgba(255,255,255,.05)}
+    .chart-toolbar::-webkit-scrollbar,.foundry-filter::-webkit-scrollbar{height:7px}
+    .chart-toolbar::-webkit-scrollbar-track,.foundry-filter::-webkit-scrollbar-track{background:rgba(255,255,255,.045); border-radius:999px}
+    .chart-toolbar::-webkit-scrollbar-thumb,.foundry-filter::-webkit-scrollbar-thumb{background:linear-gradient(90deg, rgba(57,217,255,.65), rgba(177,92,255,.55)); border-radius:999px}
+    .chip{flex:0 0 auto; white-space:nowrap; scroll-snap-align:start; border:1px solid var(--stroke); color:#c9d7ec; background:rgba(255,255,255,.045); border-radius:999px; padding:8px 11px; cursor:pointer; font-size:12px; font-weight:750}
     .chip.active{background:linear-gradient(135deg, rgba(57,217,255,.22), rgba(177,92,255,.20)); color:white; border-color:rgba(57,217,255,.42)}
+    .trend-filter-head{display:flex; align-items:flex-start; flex-direction:column; gap:4px; margin:10px 0 8px}
+    .trend-filter-title{font-size:12px; color:#9fb0c9; font-weight:800; letter-spacing:.02em; text-transform:uppercase}
+    .foundry-filter{display:flex; flex-wrap:nowrap; gap:8px; margin-bottom:12px; overflow-x:auto; overflow-y:hidden; padding:2px 2px 8px; scroll-snap-type:x proximity; scrollbar-width:thin; scrollbar-color:rgba(57,217,255,.42) rgba(255,255,255,.05)}
+    .foundry-toggle{flex:0 0 auto; white-space:nowrap; scroll-snap-align:start; display:inline-flex; align-items:center; gap:7px; padding:7px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.045); color:#cdd8e8; font-size:12px; font-weight:750; cursor:pointer; user-select:none}
+    .foundry-toggle input{width:auto; accent-color:var(--foundry-color, #39d9ff)}
+    .foundry-toggle .legend-swatch{width:9px; height:9px; border-radius:50%; background:var(--foundry-color, #39d9ff); box-shadow:0 0 14px var(--foundry-color, #39d9ff)}
+    .foundry-toggle:has(input:checked){border-color:color-mix(in srgb, var(--foundry-color, #39d9ff) 58%, transparent); background:color-mix(in srgb, var(--foundry-color, #39d9ff) 13%, rgba(255,255,255,.045))}
     .table-wrap{overflow:auto; border-radius:20px; border:1px solid var(--stroke); background:rgba(6,10,24,.48)}
     table{width:100%; border-collapse:collapse; min-width:900px; font-size:13px}
     th,td{padding:12px 12px; text-align:right; border-bottom:1px solid rgba(148,163,184,.12); white-space:nowrap}
@@ -165,10 +175,32 @@
     .small{font-size:12px;color:var(--muted); line-height:1.55}
     .row-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin:12px 0 0}
     .watermark{color:#718096; font-size:12px; text-align:right; margin-top:8px}
-    @media(max-width:1180px){.hero,.grid.inputs,.results-layout,.comparison{grid-template-columns:1fr}.cards{grid-template-columns:repeat(3,1fr)}.mini-dashboard{grid-template-columns:repeat(4,1fr)}}
-    @media(max-width:760px){.wrap{width:min(100% - 20px, 1480px)}.hero-card{padding:24px}.mini-dashboard{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.source-grid{grid-template-columns:1fr}.chart-box{height:360px}.bar-chart-box{height:520px; min-height:520px}th,td{padding:10px 9px}.nav{display:none}}
+
+    .wafer-layout{display:grid; grid-template-columns:minmax(340px,.88fr) minmax(0,1.12fr); gap:16px; align-items:stretch}
+    .wafer-map-box{height:720px; min-height:720px; padding:12px}
+    .wafer-map-box canvas{max-width:100%; max-height:100%}
+    .wafer-kpis{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-top:12px}
+    .wafer-kpi{border:1px solid var(--stroke); background:rgba(255,255,255,.045); border-radius:16px; padding:12px; min-height:82px}
+    .wafer-kpi span{display:block; color:var(--muted); font-size:11px; line-height:1.35}
+    .wafer-kpi b{display:block; color:#f4fbff; margin-top:6px; font-size:20px; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+    .wafer-kpi small{display:block; color:#8092ad; margin-top:4px; line-height:1.35}
+    .wafer-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .wafer-note{margin-top:12px; color:#9fb0c9; font-size:12px; line-height:1.55; border:1px dashed rgba(57,217,255,.28); background:rgba(57,217,255,.05); border-radius:14px; padding:12px}
+    @media(max-width:1180px){.hero,.grid.inputs,.results-layout,.comparison,.wafer-layout{grid-template-columns:1fr}.cards{grid-template-columns:repeat(3,1fr)}.mini-dashboard{grid-template-columns:repeat(4,1fr)}}
+    @media(max-width:760px){.wrap{width:min(100% - 20px, 1480px)}.hero-card{padding:24px}.mini-dashboard{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}.source-grid{grid-template-columns:1fr}.chart-box{height:360px}.bar-chart-box{height:520px; min-height:520px}.wafer-map-box{height:640px; min-height:640px}.wafer-kpis{grid-template-columns:1fr 1fr}th,td{padding:10px 9px}.nav{display:none}}
     @media(max-width:520px){.cards{grid-template-columns:1fr}.mini-dashboard{grid-template-columns:1fr}.hero-actions{flex-direction:column}.btn{justify-content:center}}
 
+
+
+    /* Trend control layout: keep same-type controls on one row; use horizontal scroll instead of wrapping. */
+    #charts .panel{min-width:0}
+    #metricChips,#trendFoundryFilters{max-width:100%; width:100%}
+    #metricChips .chip,#trendFoundryFilters .foundry-toggle{min-height:34px}
+    #trendFoundryFilters input{flex:0 0 auto}
+    @media(max-width:760px){
+      #charts .chart-toolbar,#charts .foundry-filter{margin-left:-2px; margin-right:-2px}
+      #charts .trend-filter-head .small{line-height:1.45}
+    }
 
     /* Compact header + robust chart containment fixes */
     header{padding:22px 0 14px}
@@ -236,16 +268,15 @@
           <span class="kicker"><span class="pulse"></span> PPAC Scaling Studio · CMOS</span>
           <h1><span class="grad">CMOS PPAC</span></h1>
           <div class="hero-subline">Area · Power · Frequency · Yield · Cost</div>
-          <p class="subtitle">Enter the current logic area, active power, and converged frequency, then choose the source and target foundry/node. The tool estimates area, power, converged frequency, yield, and cost per good die for the target node and nearby nodes. Built-in defaults cover TSMC, Samsung, Intel, and SMIC at 28/16/14/12/10/7/6/5/4/3/2nm-class nodes with confidence labels for public anchors, interpolation, and low-confidence extrapolation.</p>
+          <p class="subtitle">Enter the current logic area, active power, and converged frequency, then choose the source and target foundry/node. The tool estimates area, power, converged frequency, yield, and cost per good die for the target node and nearby nodes. Built-in defaults cover TSMC, Samsung, Intel, SMIC, and Huawei τ at available 28/16/14/12/10/7/6/5/4/3/2nm-class nodes. Low-confidence and mapped placeholder processes are removed from the selectable dataset.</p>
           <div class="author-credit">Author: Liangdacheng with GPT5.5</div>
           <div class="hero-actions">
             <a class="btn primary" href="#inputs">Start Scaling</a>
             <button class="btn" id="btnCopy">Copy Summary</button>
-            <button class="btn" id="btnExport">Export CSV</button>
             <a class="btn" href="#sources">Model Sources</a>
           </div>
           <div class="nav">
-            <a href="#inputs">Inputs</a><a href="#target">Target Results</a><a href="#charts">Trend Charts</a><a href="#nearby">Nearby Nodes</a><a href="#compare">Foundry Compare</a><a href="#data">Node Library</a>
+            <a href="#inputs">Inputs</a><a href="#target">Target Results</a><a href="#wafer">Wafer Yield Map</a><a href="#charts">Trend Charts</a><a href="#nearby">Nearby Nodes</a><a href="#compare">Foundry Compare</a><a href="#data">Node Library</a>
           </div>
         </div>
         <div class="glass mini-dashboard">
@@ -258,14 +289,14 @@
     </header>
 
     <section id="inputs" class="section">
-      <div class="section-title"><h2>Inputs & Model Knobs</h2><div class="hint">Low-confidence nodes are not PDK data; use them only for early trade-off studies. Wafer cost and D0 can be calibrated with multipliers.</div></div>
+      <div class="section-title"><h2>Inputs & Model Knobs</h2><div class="hint">Default: current TSMC 12nm, target TSMC 6nm, logic area 20×20 mm = 400 mm². Wafer cost and D0 can be calibrated with multipliers.</div></div>
       <div class="grid inputs">
         <div class="panel">
           <h3><span class="tag-dot"></span>Current Design</h3>
           <div class="form-grid">
             <div><label>Current Foundry</label><select id="currentFoundry"></select></div>
             <div><label>Current Node</label><select id="currentNode"></select></div>
-            <div><label>Logic Area A<sub>logic</sub> / mm²</label><input id="logicArea" type="number" min="0.001" step="0.1" value="50"></div>
+            <div><label>Logic Area A<sub>logic</sub> / mm²</label><input id="logicArea" type="number" min="0.001" step="0.1" value="400"><div class="small">Default = 20 mm × 20 mm</div></div>
             <div><label>Logic Active Power / W</label><input id="logicPower" type="number" min="0" step="0.1" value="10"></div>
             <div><label>Converged Frequency / GHz</label><input id="frequency" type="number" min="0.001" step="0.01" value="1.0"></div>
             <div><label>Fixed IO/Analog/Pad Area / mm²</label><input id="otherArea" type="number" min="0" step="0.1" value="0"></div>
@@ -302,9 +333,9 @@
             <input class="full" id="d0Mult" type="range" min="0.25" max="3.0" step="0.05" value="1">
             <div class="full inline"><label>Wafer cost multiplier: quote/region/customer calibration</label><span class="range-value" id="costMultVal">1.00×</span></div>
             <input class="full" id="costMult" type="range" min="0.5" max="2.0" step="0.05" value="1">
+            <div><label>Huawei τ W2W Stack Layers</label><select id="taoStackLayers"><option value="2">2-layer W2W</option><option value="3">3-layer W2W</option></select><div class="small">Only applies to Huawei τ/LogicFold roadmap nodes; cost × layers, yield ^ layers.</div></div>
           </div>
           <div class="toggle-row">
-            <label class="toggle"><input type="checkbox" id="includeLow" checked>Include low-confidence extrapolated nodes in charts</label>
             <label class="toggle"><input type="checkbox" id="showSameFreq" checked>Show same-frequency power</label>
           </div>
         </div>
@@ -315,6 +346,7 @@
       <div class="section-title"><h2>Target Node Results</h2><div class="hint" id="resultCaption">—</div></div>
       <div class="cards">
         <div class="metric-card"><div class="metric-label">Logic Area <span id="areaBadge" class="badge">—</span></div><div class="metric-value" id="logicAreaOut">—</div><div class="metric-foot" id="logicAreaFoot">—</div></div>
+        <div class="metric-card"><div class="metric-label">Standard MTR</div><div class="metric-value" id="mtrOut">—</div><div class="metric-foot" id="mtrFoot">—</div></div>
         <div class="metric-card"><div class="metric-label">SRAM Area</div><div class="metric-value" id="sramAreaOut">—</div><div class="metric-foot" id="sramAreaFoot">—</div></div>
         <div class="metric-card"><div class="metric-label">Converged Frequency</div><div class="metric-value" id="freqOut">—</div><div class="metric-foot" id="freqFoot">—</div></div>
         <div class="metric-card"><div class="metric-label">Power @ Converged Frequency</div><div class="metric-value" id="powerConvOut">—</div><div class="metric-foot" id="powerConvFoot">—</div></div>
@@ -323,8 +355,48 @@
       </div>
     </section>
 
+
+    <section id="wafer" class="section">
+      <div class="section-title"><h2>Wafer Yield Map / 晶圆良率分布图</h2><div class="hint">Enter die width/height, D0, line yield, and extra die-level PPM failures to visualize a wafer-level good/bad die distribution. Huawei τ/LogicFold target nodes can use configurable 2-/3-layer W2W stack cost and stacked pass probability; the map shows each wafer layer and the final intersection pass map.</div></div>
+      <div class="wafer-layout">
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--green);box-shadow:0 0 18px var(--green)"></span>Wafer Map Inputs</h3>
+          <div class="form-grid">
+            <div><label>Die Width / mm</label><input id="mapDieW" type="number" min="0.2" step="0.1" value="20"></div>
+            <div><label>Die Height / mm</label><input id="mapDieH" type="number" min="0.2" step="0.1" value="20"></div>
+            <div><label>Wafer Diameter / mm</label><input id="mapWaferDia" type="number" min="100" step="1" value="300"></div>
+            <div><label>Edge Exclusion / mm</label><input id="mapEdge" type="number" min="0" step="0.1" value="3"></div>
+            <div><label>D0 Defect Density / cm²</label><input id="mapD0" type="number" min="0" step="0.01" value="0.28"></div>
+            <div><label>Negative-binomial α</label><input id="mapAlpha" type="number" min="0.1" step="0.1" value="3"></div>
+            <div><label>Line / Parametric Yield / %</label><input id="mapLineYield" type="number" min="0" max="100" step="0.1" value="95"></div>
+            <div><label>Extra Die Failures / PPM</label><input id="mapPpm" type="number" min="0" max="1000000" step="10" value="1000"></div>
+            <div><label>Single Wafer Cost / $</label><input id="mapWaferCost" type="number" min="0" step="100" value="12000"></div>
+            <div><label>Edge Defect Boost</label><input id="mapEdgeBoost" type="number" min="0" step="0.05" value="0.60"></div>
+            <div><label>Random Seed</label><input id="mapSeed" type="number" step="1" value="2026"></div>
+            <div><label>Huawei τ W2W Layers</label><select id="mapStackLayers"><option value="2">2 wafers / dies</option><option value="3">3 wafers / dies</option></select><div class="small">Used when stack mode is enabled for Huawei τ/LogicFold.</div></div>
+            <label class="toggle full"><input type="checkbox" id="mapUseStack" checked>Use W2W stack for Huawei τ: cost × layers, pass map = intersection of all layers</label>
+          </div>
+          <div class="wafer-actions">
+            <button class="btn primary" id="btnSyncWafer" type="button">Sync from Target Node</button>
+            <button class="btn" id="btnRedrawWafer" type="button">Redraw Map</button>
+          </div>
+          <div class="wafer-note" id="waferStackFoot">—</div>
+        </div>
+        <div class="panel">
+          <h3><span class="tag-dot" style="background:var(--cyan);box-shadow:0 0 18px var(--cyan)"></span>Wafer / W2W Stack Good-Bad Distribution</h3>
+          <div class="chart-box wafer-map-box"><canvas id="waferMapCanvas"></canvas></div>
+          <div class="wafer-kpis">
+            <div class="wafer-kpi"><span>Full Dies</span><b id="waferTotalDies">—</b><small id="waferDieArea">—</small></div>
+            <div class="wafer-kpi"><span>Good / Bad</span><b id="waferGoodDies">—</b><small id="waferBadDies">—</small></div>
+            <div class="wafer-kpi"><span>Expected / Sim Yield</span><b id="waferYield">—</b><small id="waferExpected">—</small></div>
+            <div class="wafer-kpi"><span>Cost / Good Die</span><b id="waferMapCost">—</b><small id="waferCostFoot">—</small></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="charts" class="section">
-      <div class="section-title"><h2>Trend Charts</h2><div class="hint">A smaller node label is not necessarily a physically equivalent process across foundries. This is an early estimator, not a replacement for PDK/cell-library evaluation.</div></div>
+      <div class="section-title"><h2>Trend Charts</h2><div class="hint">A smaller node label is not necessarily a physically equivalent process across foundries. Huawei τ/LogicFold raw MTR is converted to standard TSMC-style MTR by ×2/3 before area scaling. This is an early estimator, not a replacement for PDK/cell-library evaluation.</div></div>
       <div class="results-layout">
         <div class="panel">
           <h3><span class="tag-dot"></span>Foundry Trends: Area / Power / Frequency / Cost</h3>
@@ -336,7 +408,10 @@
             <button class="chip" data-metric="yield">Yield</button>
             <button class="chip" data-metric="cost">Cost</button>
             <button class="chip" data-metric="density">Logic Density</button>
+            <button class="chip" data-metric="stdMtr">Standard MTR</button>
           </div>
+          <div class="trend-filter-head"><div class="trend-filter-title">Show foundry curves</div><div class="small">Use checkboxes to isolate trend lines; control rows scroll horizontally instead of wrapping.</div></div>
+          <div class="foundry-filter" id="trendFoundryFilters"></div>
           <div class="chart-box"><canvas id="trendChart"></canvas></div>
           <div class="watermark">Canvas chart · no external JS dependency</div>
         </div>
@@ -370,7 +445,7 @@
     </section>
 
     <section id="data" class="section">
-      <div class="section-title"><h2>Built-in Node Library</h2><div class="hint">High: public PPA or strong literature anchor; Medium: official description plus interpolation; Low: roadmap/rumor/extrapolation placeholder only.</div></div>
+      <div class="section-title"><h2>Built-in Node Library</h2><div class="hint">High: public PPA or strong literature anchor; Medium: official description plus interpolation; Roadmap: disclosed roadmap/effective-density point. Low-confidence and mapped placeholder processes are removed.</div></div>
       <div class="panel">
         <div class="table-wrap"><table id="dataTable"></table></div>
       </div>
@@ -383,8 +458,9 @@
         <div class="source"><b>TSMC</b>Default N7/N6, N5/N4, N3, and N2 PPA anchors come from public TSMC pages/releases. N2 SRAM defaults use the roughly 38 Mb/mm² SRAM macro figure reported by TSMC Research. Less-public 16/14/12/10nm points are interpolated.</div>
         <div class="source"><b>Samsung</b>Default SF7, SF5, SF4, and SF3 PPA anchors come from Samsung Foundry logic-node pages and releases. SF2 is treated as a roadmap-level estimate.</div>
         <div class="source"><b>Intel</b>Default Intel 4, Intel 3, and Intel 18A factors come from public Intel Foundry materials. Nominal 14/10/7/6/5/4/3/2nm labels map to Intel 14, 10SF/Intel 7, Intel 4, Intel 3, and 18A classes; they are not exact nm equivalents.</div>
-        <div class="source"><b>SMIC</b>28nm, 14nm, and N+1/N+2-class points are anchored to public reporting and known service nodes. Below 10nm there is insufficient public PDK/PPA data; 6/5/4/3/2nm entries are low-confidence placeholders for sensitivity studies.</div>
+        <div class="source"><b>SMIC</b>28nm, 14nm, and N+1/N+2-class points are anchored to public reporting and known service nodes. Unverified extrapolated SMIC placeholders have been removed from the selectable dataset.</div>
         <div class="source"><b>Cost / Yield</b>Yield uses a negative-binomial model. Cost uses gross dies per wafer, die yield, line yield, package/test, and NRE amortization. Wafer cost and D0 are adjustable defaults; real pricing depends on customer, capacity, region, masks, IP, test, and yield ramp.</div>
+        <div class="source"><b>Wafer Yield Map</b>The wafer map uses full rectangular dies inside the printable wafer radius, negative-binomial die yield, optional die-level PPM failures, edge defect boost, and deterministic pseudo-random pass/fail rendering. Huawei τ stack mode supports 2-/3-layer W2W: total cost scales with layer count and final stack pass is the product of all layer pass probabilities.</div>
       </div>
       <p class="small" style="margin-top:14px">Recommended use: use this tool for early architecture/technology trade-offs. During a real project, replace defaults with the target foundry PDK, standard-cell library, SRAM compiler, floorplan, STA, power, IR-drop, and thermal signoff results.</p>
     </section>
@@ -394,14 +470,13 @@
 
 <script>
 const NODE_ORDER = [28,16,14,12,10,7,6,5,4,3,2];
-const FOUND_ORD = ["TSMC","Samsung","Intel","SMIC"];
-const COLORS = {TSMC:"#39d9ff", Samsung:"#ff4fd8", Intel:"#7c8cff", SMIC:"#39f5a6"};
-const CONF_LABEL = {high:"High", medium:"Medium", low:"Low", alias:"Alias"};
+const FOUND_ORD = ["TSMC","Samsung","Intel","SMIC","Huawei τ"];
+const COLORS = {TSMC:"#39d9ff", Samsung:"#ff4fd8", Intel:"#7c8cff", SMIC:"#39f5a6", "Huawei τ":"#ffe27a"};
+const CONF_LABEL = {high:"High", medium:"Medium", roadmap:"Roadmap"};
 const DATA = {
   TSMC:{
     28:{label:"N28", density:1.00, speed:1.00, energy:1.00, sram:5.75, vdd:.90, wafer:3000, d0:.08, conf:"high", note:"Public mature node; used as this tool’s 28nm normalized baseline."},
     16:{label:"N16/N16FF", density:2.00, speed:1.50, energy:.40, sram:10.45, vdd:.80, wafer:6000, d0:.10, conf:"medium", note:"Anchored by DeepScaleTool/public silicon trends; official N7 density is about 3× N16."},
-    14:{label:"N16FFC/14-class", density:2.15, speed:1.55, energy:.38, sram:10.90, vdd:.80, wafer:6100, d0:.10, conf:"alias", note:"TSMC has no mainstream 14nm-named node; interpolated using a 16FFC/14-class alias."},
     12:{label:"N12FFC", density:2.40, speed:1.65, energy:.34, sram:12.0, vdd:.78, wafer:6500, d0:.11, conf:"medium", note:"TSMC 12FFC+ is publicly described as improving gate density/speed/power; values are interpolated between N16 and N10/N7."},
     10:{label:"N10", density:3.00, speed:1.80, energy:.30, sram:15.0, vdd:.76, wafer:8000, d0:.13, conf:"medium", note:"Short-lived node; density and efficiency are used as an intermediate point between 16 and 7."},
     7:{label:"N7", density:6.00, speed:1.95, energy:.18, sram:27.1, vdd:.72, wafer:9500, d0:.15, conf:"high", note:"TSMC public anchor: N7 vs N16 is about 3× logic density, 30% speed gain, and 55% power saving."},
@@ -413,7 +488,6 @@ const DATA = {
   },
   Samsung:{
     28:{label:"28nm", density:1.00, speed:1.00, energy:1.00, sram:5.5, vdd:.90, wafer:2600, d0:.10, conf:"high", note:"Samsung 28nm mature node, used as the normalized baseline."},
-    16:{label:"14/16-class", density:1.80, speed:1.38, energy:.50, sram:9.5, vdd:.82, wafer:4500, d0:.14, conf:"alias", note:"Samsung mainstream FinFET generation is 14LPE/LPP; 16nm is treated as a 14/16-class estimate."},
     14:{label:"14LPP", density:2.05, speed:1.48, energy:.44, sram:10.4, vdd:.80, wafer:5000, d0:.15, conf:"high", note:"Samsung 14nm FinFET is a public mature node; PPA relative to 28nm is model-estimated."},
     12:{label:"11/12-class", density:2.35, speed:1.58, energy:.39, sram:11.8, vdd:.78, wafer:6000, d0:.17, conf:"medium", note:"Interpolated as a Samsung 11LPP/12-class point."},
     10:{label:"10LPE/LPP", density:3.00, speed:1.75, energy:.32, sram:15.0, vdd:.75, wafer:7500, d0:.20, conf:"medium", note:"10nm FinFET node, used as the predecessor anchor for SF7 PPA."},
@@ -422,51 +496,91 @@ const DATA = {
     5:{label:"SF5/5LPE", density:5.25, speed:2.31, energy:.128, sram:28.0, vdd:.70, wafer:13000, d0:.26, conf:"high", note:"Samsung public anchor: 5nm vs 7nm gives 25% logic area efficiency, 20% lower power, or 10% higher performance."},
     4:{label:"SF4/4LPP", density:6.20, speed:2.55, energy:.110, sram:29.5, vdd:.70, wafer:14000, d0:.22, conf:"medium", note:"SF4 public materials emphasize 200nm cell height and improved performance; values are interpolated from SF5 to SF3."},
     3:{label:"SF3", density:8.08, speed:3.00, energy:.064, sram:30.0, vdd:.68, wafer:17000, d0:.34, conf:"high", note:"Samsung public anchor: second-generation 3nm GAA vs 5nm is about 50% lower power, 30% performance gain, and 35% smaller area."},
-    2:{label:"SF2", density:9.70, speed:3.36, energy:.048, sram:32.0, vdd:.65, wafer:20000, d0:.40, conf:"low", note:"SF2 public information is mostly roadmap/qualitative PPA; values are low-confidence extrapolations."}
   },
   Intel:{
-    28:{label:"28-class", density:1.00, speed:1.00, energy:1.00, sram:5.7, vdd:.90, wafer:3500, d0:.10, conf:"alias", note:"Intel has no standard public foundry 28nm anchor; normalized as a 28-class point."},
-    16:{label:"14/16-class", density:1.85, speed:1.36, energy:.52, sram:9.8, vdd:.82, wafer:6200, d0:.12, conf:"alias", note:"Mapped to a pre/around-Intel-14nm 14/16-class point."},
     14:{label:"Intel 14", density:2.05, speed:1.46, energy:.45, sram:10.8, vdd:.80, wafer:6500, d0:.12, conf:"high", note:"Intel 14nm mature production node; PPA is estimated relative to 28-class."},
-    12:{label:"14++/12-class", density:2.40, speed:1.60, energy:.39, sram:12.0, vdd:.78, wafer:7500, d0:.14, conf:"medium", note:"Intel has no mainstream 12nm-named node; interpolated using a 14++/12-class alias."},
+    12:{label:"14++/12-class", density:2.40, speed:1.60, energy:.39, sram:12.0, vdd:.78, wafer:7500, d0:.14, conf:"medium", note:"Intel has no mainstream 12nm-named node; interpolated from the 14++/10nm public-class scaling trend."},
     10:{label:"10SF", density:4.50, speed:1.76, energy:.31, sram:18.0, vdd:.75, wafer:9000, d0:.24, conf:"medium", note:"Mapped to early/mid Intel 10nm/SuperFin."},
     7:{label:"Intel 7", density:5.20, speed:2.00, energy:.25, sram:22.0, vdd:.72, wafer:11000, d0:.20, conf:"high", note:"Intel 7 is the renamed 10nm Enhanced SuperFin generation; it is not equivalent to TSMC/Samsung 7nm."},
-    6:{label:"Intel 6-class", density:6.40, speed:2.12, energy:.21, sram:25.0, vdd:.71, wafer:12000, d0:.20, conf:"low", note:"No mainstream public Intel 6 node; interpolated from Intel 7 to Intel 4."},
-    5:{label:"Intel 5-class", density:8.00, speed:2.25, energy:.18, sram:29.0, vdd:.70, wafer:15000, d0:.22, conf:"low", note:"No mainstream public Intel 5 node; interpolated from Intel 7 to Intel 4."},
     4:{label:"Intel 4", density:10.40, speed:2.42, energy:.150, sram:32.0, vdd:.68, wafer:18000, d0:.24, conf:"high", note:"Intel public anchor: Intel 4 vs Intel 7 offers about 2× logic area scaling and >20% perf/W; VLSI reports cite additional iso-power/iso-frequency data."},
     3:{label:"Intel 3", density:11.23, speed:2.85, energy:.127, sram:33.0, vdd:.66, wafer:20000, d0:.22, conf:"high", note:"Intel public anchor: Intel 3 vs Intel 4 gives about 1.08× chip density and 18% perf/W."},
     2:{label:"18A/20A class", density:14.60, speed:3.28, energy:.110, sram:35.0, vdd:.64, wafer:23000, d0:.26, conf:"high", note:"Intel 18A public anchor: up to 15% perf/W and 30% chip density vs Intel 3; mapped to 2nm-class."}
   },
   SMIC:{
     28:{label:"28HKMG", density:1.00, speed:1.00, energy:1.00, sram:5.4, vdd:.90, wafer:2200, d0:.12, conf:"high", note:"SMIC 28nm HKMG has public production history; used as the normalized baseline."},
-    16:{label:"14/16-class", density:1.75, speed:1.32, energy:.55, sram:9.0, vdd:.82, wafer:4000, d0:.22, conf:"alias", note:"SMIC 14nm FinFET is the public anchor; 16nm is treated as an alias."},
     14:{label:"14 FinFET", density:2.00, speed:1.45, energy:.45, sram:10.0, vdd:.80, wafer:4500, d0:.25, conf:"medium", note:"Public reporting indicates SMIC 14nm FinFET production; PPA values are estimated."},
-    12:{label:"12-class", density:2.35, speed:1.55, energy:.40, sram:11.5, vdd:.78, wafer:5500, d0:.27, conf:"low", note:"SMIC 12nm lacks verifiable public PPA; interpolated placeholder."},
-    10:{label:"10-class", density:3.00, speed:1.65, energy:.33, sram:14.0, vdd:.76, wafer:6500, d0:.30, conf:"low", note:"SMIC 10nm-class lacks public mainstream production PPA; low-confidence interpolation."},
     7:{label:"N+1/N+2 7-class", density:4.85, speed:1.74, energy:.194, sram:21.0, vdd:.74, wafer:7500, d0:.38, conf:"medium", note:"Public reports: N+1 vs 14nm has about 20% performance gain, 57% power reduction, and 55–63% logic area reduction."},
-    6:{label:"6-class extrap.", density:5.35, speed:1.86, energy:.170, sram:22.5, vdd:.73, wafer:8500, d0:.45, conf:"low", note:"Low-confidence extrapolation; no public PDK/PPA anchor."},
-    5:{label:"5-class extrap.", density:6.50, speed:2.00, energy:.140, sram:24.5, vdd:.71, wafer:12000, d0:.55, conf:"low", note:"Low-confidence extrapolation; multi-patterning DUV can strongly affect cost and yield."},
-    4:{label:"4-class extrap.", density:7.60, speed:2.15, energy:.120, sram:26.0, vdd:.70, wafer:15000, d0:.65, conf:"low", note:"Low-confidence extrapolation; use only for sensitivity analysis."},
-    3:{label:"3-class extrap.", density:9.00, speed:2.40, energy:.100, sram:28.0, vdd:.68, wafer:18000, d0:.80, conf:"low", note:"Low-confidence extrapolation; no public production PPA."},
-    2:{label:"2-class extrap.", density:11.00, speed:2.70, energy:.080, sram:30.0, vdd:.66, wafer:22000, d0:1.00, conf:"low", note:"Low-confidence extrapolation; no public production PPA. Placeholder for trend visualization."}
+  },
+  "Huawei τ":{
+    14:{label:"Huawei/SMIC 14 FinFET reference", density:2, rawMtr:null, stdMtr:30.6, speed:1.45, energy:0.45, sram:10, vdd:0.8, wafer:4500, d0:0.25, conf:"medium", waferMult:1, yieldStacks:1, note:"Conventional 14nm reference; not a τ/LogicFold two-wafer point."},
+    10:{label:"τ pre-LF 2023/2024 raw 126", density:5.4902, rawMtr:126, stdMtr:84, speed:2.6, energy:0.384615, sram:21, vdd:0.74, wafer:7500, d0:0.38, conf:"roadmap", waferMult:2, yieldStacks:2, note:"τ roadmap raw density 126 MTr/mm². Converted by raw×2/3 from 2T CPP×cell-height density to NAND2/SDB TSMC-style MTR. Cost uses two dies/wafers and yield is squared."},
+    7:{label:"τ 2025 raw 155", density:6.75381, rawMtr:155, stdMtr:103.333, speed:2.75, energy:0.363636, sram:22.5, vdd:0.73, wafer:8500, d0:0.45, conf:"roadmap", waferMult:2, yieldStacks:2, note:"τ roadmap raw density 155 MTr/mm². Standard TSMC-style MTR uses the NAND2/SDB 4/(3CPP×H) conversion, i.e. 2/3 of raw 2T density."},
+    6:{label:"LogicFold 2026 raw 238", density:10.3704, rawMtr:238, stdMtr:158.667, speed:3.1, energy:0.322581, sram:24.5, vdd:0.71, wafer:12000, d0:0.55, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 238 MTr/mm² and 3.1 GHz P-core frequency. Cost/yield are modeled as a two-die / two-wafer stack."},
+    5:{label:"LogicFold 2027 raw 252", density:10.9804, rawMtr:252, stdMtr:168, speed:3.39, energy:0.294985, sram:25.5, vdd:0.7, wafer:13000, d0:0.6, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 252 MTr/mm² and 3.39 GHz. Raw MTR is not compared directly; area scaling uses standardized TSMC-style MTR."},
+    4:{label:"LogicFold 2028 raw 266", density:11.5904, rawMtr:266, stdMtr:177.333, speed:3.71, energy:0.269542, sram:26.5, vdd:0.69, wafer:15000, d0:0.7, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 266 MTr/mm² and 3.71 GHz design point."},
+    3:{label:"LogicFold 2030 raw 292", density:12.7233, rawMtr:292, stdMtr:194.667, speed:4.3, energy:0.232558, sram:28, vdd:0.68, wafer:18000, d0:0.85, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 292 MTr/mm² and 4.3 GHz point. This is a roadmap/effective-density model, not a public PDK."},
+    2:{label:"LogicFold 2031 raw 400+", density:17.4292, rawMtr:400, stdMtr:266.667, speed:5, energy:0.2, sram:30, vdd:0.66, wafer:22000, d0:1, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap shows 400+ raw MTr/mm² and 5.0 GHz. The tool uses 400 as the conservative numeric floor, converts to standard MTR by ×2/3, doubles die/wafer cost, and squares yield."}
   }
 };
 
 let activeMetric = "area";
+let activeTrendFoundries = new Set(FOUND_ORD);
 const els = {};
-const ids = ["currentFoundry","currentNode","targetFoundry","targetNode","logicArea","logicPower","frequency","otherArea","sramMbit","sramPower","freqRealization","areaOverhead","powerGuard","waferDiameter","pkgTest","nre","volume","lineYield","alpha","d0Mult","costMult","includeLow","showSameFreq"];
+const ids = ["currentFoundry","currentNode","targetFoundry","targetNode","logicArea","logicPower","frequency","otherArea","sramMbit","sramPower","freqRealization","areaOverhead","powerGuard","waferDiameter","pkgTest","nre","volume","lineYield","alpha","d0Mult","costMult","taoStackLayers","showSameFreq"];
 ids.forEach(id=>els[id]=document.getElementById(id));
+function isAvailableNode(foundry,node){
+  return !!(DATA[foundry] && DATA[foundry][node] && !["low","alias"].includes(DATA[foundry][node].conf));
+}
+function availableNodes(foundry){
+  return NODE_ORDER.filter(n=>isAvailableNode(foundry,n));
+}
+function closestAvailableNode(foundry,desired){
+  const nodes=availableNodes(foundry);
+  if(nodes.length===0) return null;
+  const d=Number(desired);
+  if(nodes.includes(d)) return d;
+  return nodes.slice().sort((a,b)=>Math.abs(a-d)-Math.abs(b-d))[0];
+}
+function populateNodeSelect(sel, foundry, desired){
+  const nodes=availableNodes(foundry);
+  const chosen=closestAvailableNode(foundry, desired);
+  sel.innerHTML=nodes.map(n=>`<option value="${n}">${n} nm</option>`).join("");
+  if(chosen!==null) sel.value=String(chosen);
+}
+function initTrendFoundryFilters(){
+  const host=document.getElementById("trendFoundryFilters");
+  if(!host) return;
+  activeTrendFoundries = new Set(FOUND_ORD);
+  host.innerHTML = FOUND_ORD.map(f=>`<label class="foundry-toggle" style="--foundry-color:${COLORS[f]}"><input type="checkbox" data-foundry="${f}" checked><span class="legend-swatch"></span>${f}</label>`).join("");
+  host.addEventListener("change", e=>{
+    if(!e.target.matches("input[data-foundry]")) return;
+    const f=e.target.dataset.foundry;
+    if(e.target.checked) activeTrendFoundries.add(f); else activeTrendFoundries.delete(f);
+    if(activeTrendFoundries.size===0){
+      activeTrendFoundries.add(f);
+      e.target.checked=true;
+      toast("Keep at least one foundry curve selected");
+      return;
+    }
+    update();
+  });
+}
+function selectedTrendFoundries(){
+  return FOUND_ORD.filter(f=>activeTrendFoundries.has(f));
+}
 function initSelects(){
   [els.currentFoundry, els.targetFoundry].forEach(sel=>{sel.innerHTML=FOUND_ORD.map(f=>`<option value="${f}">${f}</option>`).join("")});
-  [els.currentNode, els.targetNode].forEach(sel=>{sel.innerHTML=NODE_ORDER.map(n=>`<option value="${n}">${n} nm</option>`).join("")});
-  els.currentFoundry.value="TSMC"; els.targetFoundry.value="TSMC"; els.currentNode.value="28"; els.targetNode.value="2";
+  els.currentFoundry.value="TSMC";
+  els.targetFoundry.value="TSMC";
+  populateNodeSelect(els.currentNode, els.currentFoundry.value, 12);
+  populateNodeSelect(els.targetNode, els.targetFoundry.value, 6);
 }
 function num(id){return Number(els[id].value)||0}
 function getInput(){
   return {
     currentFoundry:els.currentFoundry.value, currentNode:Number(els.currentNode.value), targetFoundry:els.targetFoundry.value, targetNode:Number(els.targetNode.value),
     logicArea:num("logicArea"), logicPower:num("logicPower"), frequency:num("frequency"), otherArea:num("otherArea"), sramMbit:num("sramMbit"), sramPower:num("sramPower"),
-    freqRealization:num("freqRealization"), areaOverhead:num("areaOverhead"), powerGuard:num("powerGuard"), waferDiameter:num("waferDiameter"), pkgTest:num("pkgTest"), nre:num("nre"), volume:Math.max(1,num("volume")), lineYield:num("lineYield"), alpha:num("alpha"), d0Mult:num("d0Mult"), costMult:num("costMult"), includeLow:els.includeLow.checked, showSameFreq:els.showSameFreq.checked
+    freqRealization:num("freqRealization"), areaOverhead:num("areaOverhead"), powerGuard:num("powerGuard"), waferDiameter:num("waferDiameter"), pkgTest:num("pkgTest"), nre:num("nre"), volume:Math.max(1,num("volume")), lineYield:num("lineYield"), alpha:num("alpha"), d0Mult:num("d0Mult"), costMult:num("costMult"), taoStackLayers:Math.max(2, Math.min(3, Math.round(num("taoStackLayers")||2))), showSameFreq:els.showSameFreq.checked
   };
 }
 function fmt(v, digits=2){
@@ -485,6 +599,11 @@ function money(v){
   return "$"+v.toFixed(2);
 }
 function pct(v){return (v*100).toFixed(v<.1?2:1)+"%"}
+const TSMC28_MTR = 15.3;
+function stdMtr(d){return Number.isFinite(d.stdMtr)?d.stdMtr:d.density*TSMC28_MTR}
+function rawMtrText(d){return Number.isFinite(d.rawMtr)?fmt(d.rawMtr)+" raw 2T MTr/mm²":"—"}
+function stdMtrText(d){return fmt(stdMtr(d))+" MTr/mm²"}
+function stackLabel(r){return r.yieldStacks>1 ? `${r.yieldStacks}-die / ${r.yieldStacks}-wafer stack` : "single wafer"}
 function confBadge(conf){return `<span class="badge ${conf}"><span class="mini-dot"></span>${CONF_LABEL[conf]||conf}</span>`}
 function grossDies(area, dia){
   if(area<=0) return 0;
@@ -493,7 +612,8 @@ function grossDies(area, dia){
 }
 function calc(foundry, node, inp){
   const cur = DATA[inp.currentFoundry][inp.currentNode];
-  const t = DATA[foundry][node];
+  const t = DATA[foundry] && DATA[foundry][node];
+  if(!cur || !t) throw new Error(`Missing process data for ${foundry} ${node}nm`);
   const densityRatio = t.density/cur.density;
   const logicArea = inp.logicArea/densityRatio*inp.areaOverhead;
   const currentSramArea = inp.sramMbit>0 ? inp.sramMbit/cur.sram : 0;
@@ -520,17 +640,209 @@ function calc(foundry, node, inp){
   const d0 = t.d0*inp.d0Mult;
   const acm2 = totalArea/100;
   const dieYield = Math.pow(1 + d0*acm2/Math.max(inp.alpha,.001), -inp.alpha);
-  const finalYield = dieYield*inp.lineYield;
-  const waferCost = t.wafer*inp.costMult;
+  const taoStackable = foundry === "Huawei τ" && Number(t.waferMult||1) > 1;
+  const configuredLayers = Math.max(2, Math.min(3, Math.round(Number(inp.taoStackLayers || t.yieldStacks || 2))));
+  const waferMult = taoStackable ? configuredLayers : Math.max(1, Number(t.waferMult||1));
+  const yieldStacks = taoStackable ? configuredLayers : Math.max(1, Number(t.yieldStacks||1));
+  const baseYield = dieYield*inp.lineYield;
+  const finalYield = Math.pow(baseYield, yieldStacks);
+  const waferUnitCost = t.wafer*inp.costMult;
+  const waferCost = waferUnitCost*waferMult;
   const dieMfgCost = gd>0 && finalYield>0 ? waferCost/(gd*finalYield) : Infinity;
   const nrePerDie = inp.nre/Math.max(inp.volume,1);
   const cost = dieMfgCost + inp.pkgTest + nrePerDie;
-  return {foundry,node,info:t, logicArea,sramArea,totalArea,currentTotalArea,freq,freqRatio,logicPowerSame,logicPowerConv,sramPowerSame,sramPowerConv,powerSame,powerConv,gd,d0,dieYield,finalYield,waferCost,dieMfgCost,nrePerDie,cost,densityRatio,energyRatio};
+  return {foundry,node,info:t, logicArea,sramArea,totalArea,currentTotalArea,freq,freqRatio,logicPowerSame,logicPowerConv,sramPowerSame,sramPowerConv,powerSame,powerConv,gd,d0,dieYield,baseYield,finalYield,waferUnitCost,waferMult,yieldStacks,waferCost,dieMfgCost,nrePerDie,cost,densityRatio,energyRatio};
 }
-function nearbyNodes(target){
-  const i = NODE_ORDER.indexOf(Number(target));
-  const start=Math.max(0,i-2), end=Math.min(NODE_ORDER.length-1,i+2);
-  return NODE_ORDER.slice(start,end+1);
+
+function clamp(v, lo, hi){return Math.max(lo, Math.min(hi, v))}
+function readMapNumber(id, fallback){const el=document.getElementById(id); if(!el) return fallback; const v=Number(el.value); return Number.isFinite(v)?v:fallback}
+function readMapInt(id, fallback){return Math.round(readMapNumber(id, fallback))}
+function setMapValue(id, v){const el=document.getElementById(id); if(el) el.value=String(v)}
+function setText(id, v){const el=document.getElementById(id); if(el) el.textContent=v}
+function seededRand(ix, iy, seed){
+  let x = ((ix|0)*374761393 + (iy|0)*668265263 + (seed|0)*1442695041) | 0;
+  x = (x ^ (x >>> 13)) | 0;
+  x = Math.imul(x, 1274126177) | 0;
+  x = (x ^ (x >>> 16)) >>> 0;
+  return x / 4294967296;
+}
+function getWaferInput(inp, r){
+  const useStack = document.getElementById("mapUseStack") ? document.getElementById("mapUseStack").checked : true;
+  const isTauStackable = r.foundry === "Huawei τ" && Number(r.info.waferMult||1) > 1;
+  const layerControl = document.getElementById("mapStackLayers");
+  const selectedLayers = Math.max(2, Math.min(3, readMapInt("mapStackLayers", inp.taoStackLayers || r.yieldStacks || 2)));
+  const stackLayers = (useStack && isTauStackable) ? selectedLayers : 1;
+  return {
+    dieW: Math.max(0.2, readMapNumber("mapDieW", 20)),
+    dieH: Math.max(0.2, readMapNumber("mapDieH", 20)),
+    waferDia: Math.max(100, readMapNumber("mapWaferDia", inp.waferDiameter || 300)),
+    edge: Math.max(0, readMapNumber("mapEdge", 3)),
+    d0: Math.max(0, readMapNumber("mapD0", r.d0)),
+    alpha: Math.max(0.1, readMapNumber("mapAlpha", inp.alpha || 3)),
+    lineYield: clamp(readMapNumber("mapLineYield", inp.lineYield*100)/100, 0, 1),
+    ppm: clamp(readMapNumber("mapPpm", 0), 0, 1000000),
+    waferUnitCost: Math.max(0, readMapNumber("mapWaferCost", r.waferUnitCost)),
+    edgeBoost: Math.max(0, readMapNumber("mapEdgeBoost", .6)),
+    seed: Math.floor(readMapNumber("mapSeed", 2026)),
+    waferMult: stackLayers,
+    yieldStacks: stackLayers,
+    pkgTest: inp.pkgTest,
+    nrePerDie: inp.nre/Math.max(inp.volume,1),
+    targetLabel: `${r.foundry} ${r.info.label}`,
+    isTauStackable,
+    stackEnabled: useStack && isTauStackable
+  };
+}
+function calcWaferMap(inp, r){
+  const wInp = getWaferInput(inp, r);
+  const R = Math.max(1, wInp.waferDia/2 - wInp.edge);
+  const dieArea = wInp.dieW*wInp.dieH;
+  const dieAreaCm2 = dieArea/100;
+  const xMin = Math.floor(-R/wInp.dieW)-2, xMax = Math.ceil(R/wInp.dieW)+2;
+  const yMin = Math.floor(-R/wInp.dieH)-2, yMax = Math.ceil(R/wInp.dieH)+2;
+  const dies=[];
+  let good=0, bad=0, expected=0, singleExpected=0;
+  const layerGood = Array.from({length:wInp.yieldStacks},()=>0);
+  const ppmYield = 1 - wInp.ppm/1000000;
+  const alpha = Math.max(wInp.alpha, 0.001);
+  function insideFullDie(cx,cy){
+    const hw=wInp.dieW/2, hh=wInp.dieH/2;
+    return [[cx-hw,cy-hh],[cx+hw,cy-hh],[cx-hw,cy+hh],[cx+hw,cy+hh]].every(p=>Math.hypot(p[0],p[1]) <= R);
+  }
+  for(let ix=xMin; ix<=xMax; ix++){
+    for(let iy=yMin; iy<=yMax; iy++){
+      const cx=(ix+0.5)*wInp.dieW, cy=(iy+0.5)*wInp.dieH;
+      if(!insideFullDie(cx,cy)) continue;
+      const radial = clamp(Math.hypot(cx,cy)/Math.max(R,1e-9),0,1);
+      const localD0 = wInp.d0*(1 + wInp.edgeBoost*Math.pow(radial,4));
+      const defectYield = Math.pow(1 + localD0*dieAreaCm2/alpha, -alpha);
+      const singleY = clamp(defectYield*wInp.lineYield*ppmYield, 0, 1);
+      const layerPasses=[];
+      for(let li=0; li<wInp.yieldStacks; li++){
+        const p = seededRand(ix,iy,wInp.seed + 104729*(li+1)) < singleY;
+        layerPasses.push(p);
+        if(p) layerGood[li]++;
+      }
+      const pass = layerPasses.every(Boolean);
+      const finalY = Math.pow(singleY, wInp.yieldStacks);
+      if(pass) good++; else bad++;
+      expected += finalY;
+      singleExpected += singleY;
+      dies.push({x:cx,y:cy,pass,layerPasses,finalY,singleY,radial});
+    }
+  }
+  const total=dies.length;
+  const expYield = total>0 ? expected/total : 0;
+  const singleYieldAvg = total>0 ? singleExpected/total : 0;
+  const simYield = total>0 ? good/total : 0;
+  const layerSimYields = layerGood.map(g=>total>0?g/total:0);
+  const waferCost = wInp.waferUnitCost*wInp.waferMult;
+  const expectedCost = total>0 && expYield>0 ? waferCost/(total*expYield)+wInp.pkgTest+wInp.nrePerDie : Infinity;
+  const simCost = good>0 ? waferCost/good+wInp.pkgTest+wInp.nrePerDie : Infinity;
+  return {...wInp, R, dieArea, dieAreaCm2, dies, total, good, bad, expYield, simYield, singleYieldAvg, layerSimYields, waferCost, expectedCost, simCost};
+}
+function updateWaferMap(inp, r){
+  const m = calcWaferMap(inp, r);
+  setText("waferTotalDies", m.total.toLocaleString());
+  setText("waferDieArea", `${fmt(m.dieArea)} mm², ${m.dieW}×${m.dieH} mm`);
+  setText("waferGoodDies", `${m.good.toLocaleString()} / ${m.bad.toLocaleString()}`);
+  setText("waferBadDies", `red dies = simulated fail, seed ${m.seed}`);
+  setText("waferYield", `${pct(m.expYield)} / ${pct(m.simYield)}`);
+  setText("waferExpected", m.yieldStacks>1 ? `avg layer yield ${pct(m.singleYieldAvg)}; stack = layer^${m.yieldStacks}` : `avg single-die yield ${pct(m.singleYieldAvg)}; PPM penalty ${(m.ppm/10000).toFixed(3)}%`);
+  setText("waferMapCost", money(m.expectedCost));
+  setText("waferCostFoot", `sim ${money(m.simCost)}, wafer ${money(m.waferUnitCost)}×${m.waferMult}`);
+  const stackText = m.yieldStacks>1 ? `Huawei τ W2W stack ON: final pass ≈ layer yield^${m.yieldStacks}; wafer cost = ${money(m.waferUnitCost)} × ${m.waferMult}. Canvas shows each layer and final intersection.` : "Single-wafer mode: final pass uses one die yield and one wafer cost.";
+  setText("waferStackFoot", `${m.targetLabel}. D0=${m.d0}/cm², α=${m.alpha}, line=${pct(m.lineYield)}, extra failures=${m.ppm.toLocaleString()} PPM. ${stackText}`);
+  drawWaferMap(m);
+}
+function drawWaferMap(m){
+  const canvas=document.getElementById("waferMapCanvas");
+  if(!canvas) return;
+  const {ctx,w,h}=setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const bg=ctx.createLinearGradient(0,0,w,h); bg.addColorStop(0,"rgba(4,10,22,.96)"); bg.addColorStop(1,"rgba(20,16,46,.90)");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle="#ddecff"; ctx.font="bold 14px Inter, sans-serif"; ctx.fillText(m.yieldStacks>1?"W2W Stack Yield Distribution":"Wafer Yield Distribution",16,24);
+  ctx.fillStyle="#8ea2bd"; ctx.font="12px Inter, sans-serif"; ctx.fillText(`${m.dieW}×${m.dieH} mm die · ${m.total.toLocaleString()} full dies · edge exclusion ${m.edge} mm`,16,42, w-32);
+  const legendY=62;
+  ctx.fillStyle="rgba(57,245,166,.72)"; ctx.fillRect(16,legendY,12,12); ctx.fillStyle="#cbd9ec"; ctx.font="11px Inter, sans-serif"; ctx.fillText("Good",34,legendY+11);
+  ctx.fillStyle="rgba(255,107,122,.86)"; ctx.fillRect(86,legendY,12,12); ctx.fillStyle="#cbd9ec"; ctx.fillText("Fail",104,legendY+11);
+  ctx.strokeStyle="rgba(57,217,255,.50)"; ctx.beginPath(); ctx.moveTo(w-160,legendY+6); ctx.lineTo(w-130,legendY+6); ctx.stroke(); ctx.fillStyle="#cbd9ec"; ctx.fillText("printable edge", w-124, legendY+10, 110);
+  const panes=[];
+  if(m.yieldStacks>1){
+    for(let li=0; li<m.yieldStacks; li++) panes.push({label:`Wafer ${li+1} pass/fail`, fn:d=>d.layerPasses[li]});
+    panes.push({label:`Stack pass = ${Array.from({length:m.yieldStacks},(_,i)=>`W${i+1}`).join(" ∩ ")}`, fn:d=>d.pass, final:true});
+  }else{
+    panes.push({label:"Single wafer pass/fail", fn:d=>d.pass});
+  }
+  const top=86, bottom=22;
+  const areaH=h-top-bottom;
+  const gap=16;
+  const cols = panes.length===1 ? 1 : (w>920 && panes.length===3 ? 3 : 2);
+  const rows = Math.ceil(panes.length/cols);
+  const paneW=(w-32-gap*(cols-1))/cols;
+  const paneH=(areaH-gap*(rows-1))/rows;
+  panes.forEach((pane,pi)=>{
+    const col=pi%cols, row=Math.floor(pi/cols);
+    const x0=16+col*(paneW+gap), y0=top+row*(paneH+gap);
+    drawWaferPanel(ctx,m,pane,x0,y0,paneW,paneH);
+  });
+  if(m.dies.length>22000){
+    ctx.fillStyle="#ffe27a"; ctx.font="11px Inter, sans-serif"; ctx.fillText(`rendered sampled dies in dense view; stats use full ${m.dies.length.toLocaleString()} dies`, 16, h-6);
+  }
+}
+function drawWaferPanel(ctx,m,pane,x0,y0,pw,ph){
+  ctx.save();
+  ctx.fillStyle="rgba(255,255,255,.035)"; roundRect(ctx,x0,y0,pw,ph,14,true,false);
+  ctx.strokeStyle=pane.final?"rgba(255,226,122,.42)":"rgba(255,255,255,.12)"; ctx.lineWidth=1; roundRect(ctx,x0,y0,pw,ph,14,false,true);
+  ctx.fillStyle=pane.final?"#ffe27a":"#ddecff"; ctx.font="bold 12px Inter, sans-serif"; ctx.fillText(pane.label,x0+10,y0+20,pw-20);
+  const cx=x0+pw/2, cy=y0+ph/2+10;
+  const outerR=Math.max(20, Math.min(pw*.42, ph*.37));
+  const scale=outerR/(m.waferDia/2);
+  const printR=m.R*scale;
+  ctx.shadowBlur=18; ctx.shadowColor=pane.final?"rgba(255,226,122,.22)":"rgba(57,217,255,.18)";
+  ctx.fillStyle="rgba(148,163,184,.055)"; ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(255,255,255,.20)"; ctx.lineWidth=1.0; ctx.beginPath(); ctx.arc(cx,cy,outerR,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle="rgba(57,217,255,.38)"; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.arc(cx,cy,printR,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+  const maxDraw=12000;
+  const step=Math.max(1, Math.ceil(m.dies.length/maxDraw));
+  const rw=Math.max(.8, m.dieW*scale*.90), rh=Math.max(.8, m.dieH*scale*.90);
+  let good=0;
+  for(let i=0;i<m.dies.length;i+=step){
+    const d=m.dies[i];
+    const pass=!!pane.fn(d);
+    if(pass) good++;
+    const x=cx+d.x*scale-rw/2, y=cy+d.y*scale-rh/2;
+    ctx.fillStyle=pass?"rgba(57,245,166,.72)":"rgba(255,107,122,.86)";
+    ctx.fillRect(x,y,rw,rh);
+  }
+  const simY = pane.final ? m.simYield : (m.dies.length ? m.dies.filter(d=>pane.fn(d)).length/m.dies.length : 0);
+  const expY = pane.final ? m.expYield : m.singleYieldAvg;
+  ctx.fillStyle="#9fb0c9"; ctx.font="11px Inter, sans-serif"; ctx.fillText(`expected ${pct(expY)} · simulated ${pct(simY)}`,x0+10,y0+ph-12,pw-20);
+  ctx.restore();
+}
+function syncWaferFromTarget(){
+  const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp);
+  const side=Math.sqrt(Math.max(r.totalArea,0.01));
+  setMapValue("mapDieW", side.toFixed(2));
+  setMapValue("mapDieH", side.toFixed(2));
+  setMapValue("mapWaferDia", inp.waferDiameter);
+  setMapValue("mapD0", r.d0.toFixed(3));
+  setMapValue("mapAlpha", inp.alpha.toFixed(2));
+  setMapValue("mapLineYield", (inp.lineYield*100).toFixed(1));
+  setMapValue("mapWaferCost", r.waferUnitCost.toFixed(0));
+  if(document.getElementById("mapStackLayers")) setMapValue("mapStackLayers", String(r.yieldStacks>1 ? r.yieldStacks : inp.taoStackLayers || 2));
+  updateWaferMap(inp,r);
+}
+
+function nearbyNodes(target, foundry){
+  const source = foundry ? availableNodes(foundry) : NODE_ORDER;
+  if(source.length===0) return [];
+  const chosen = foundry ? closestAvailableNode(foundry, target) : Number(target);
+  const i = Math.max(0, source.indexOf(chosen));
+  const start=Math.max(0,i-2), end=Math.min(source.length-1,i+2);
+  return source.slice(start,end+1);
 }
 function updateRangeLabels(inp){
   document.getElementById("freqRealizationVal").textContent = Math.round(inp.freqRealization*100)+"%";
@@ -549,6 +861,8 @@ function updateCards(inp, r){
   document.getElementById("miniCost").textContent = money(r.cost);
   document.getElementById("logicAreaOut").textContent = fmt(r.logicArea)+" mm²";
   document.getElementById("logicAreaFoot").textContent = `Logic density vs current ${r.densityRatio.toFixed(2)}×; Area ratio ${(r.logicArea/Math.max(inp.logicArea,1e-9)).toFixed(3)}×`;
+  document.getElementById("mtrOut").textContent = stdMtrText(r.info);
+  document.getElementById("mtrFoot").textContent = Number.isFinite(r.info.rawMtr) ? `${rawMtrText(r.info)} → standardized by ×2/3` : `Derived from density×28 using ${TSMC28_MTR} MTr/mm² baseline`;
   document.getElementById("sramAreaOut").textContent = fmt(r.sramArea)+" mm²";
   document.getElementById("sramAreaFoot").textContent = inp.sramMbit>0 ? `${inp.sramMbit} Mbit / ${fmt(r.info.sram)} Mb/mm²` : "No SRAM capacity entered; treated as 0";
   document.getElementById("freqOut").textContent = fmt(r.freq)+" GHz";
@@ -557,41 +871,45 @@ function updateCards(inp, r){
   const same = inp.showSameFreq ? `; same-frequency ${fmt(r.powerSame)} W` : "";
   document.getElementById("powerConvFoot").textContent = `Same-function energy ratio ${r.energyRatio.toFixed(3)}×, frequency ratio ${r.freqRatio.toFixed(2)}×${same}`;
   document.getElementById("yieldOut").textContent = pct(r.finalYield);
-  document.getElementById("yieldFoot").textContent = `D0 = ${r.d0.toFixed(3)} /cm², gross dies ≈ ${Math.floor(r.gd).toLocaleString()}, die yield ${pct(r.dieYield)}`;
+  const yieldStackText = r.yieldStacks>1 ? `, stack yield ${pct(r.baseYield)}^${r.yieldStacks}` : "";
+  document.getElementById("yieldFoot").textContent = `D0 = ${r.d0.toFixed(3)} /cm², gross dies ≈ ${Math.floor(r.gd).toLocaleString()}, die yield ${pct(r.dieYield)}${yieldStackText}`;
   document.getElementById("costOut").textContent = money(r.cost);
-  document.getElementById("costFoot").textContent = `wafer ${money(r.waferCost)}, mfg ${money(r.dieMfgCost)}, NRE ${money(r.nrePerDie)}/die`;
+  const waferText = r.waferMult>1 ? `wafer ${money(r.waferUnitCost)} × ${r.waferMult} = ${money(r.waferCost)}` : `wafer ${money(r.waferCost)}`;
+  document.getElementById("costFoot").textContent = `${waferText}, mfg ${money(r.dieMfgCost)}, NRE ${money(r.nrePerDie)}/die`;
   document.getElementById("areaBadge").innerHTML = confBadge(r.info.conf);
   document.getElementById("resultCaption").textContent = `Current ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} → Target ${r.foundry} ${r.info.label}, Total Area ${fmt(r.totalArea)} mm².`;
-  document.getElementById("selectedNote").innerHTML = `${confBadge(r.info.conf)} <b>${r.foundry} ${r.info.label}</b>: ${r.info.note}<br><span class="small">Default wafer cost = ${money(r.info.wafer)}, D0 = ${r.info.d0}/cm², SRAM density=${fmt(r.info.sram)} Mb/mm².</span>`;
+  const mtrLine = Number.isFinite(r.info.rawMtr) ? `Raw τ MTR=${fmt(r.info.rawMtr)}; TSMC-style MTR=${stdMtrText(r.info)}.` : `TSMC-style MTR=${stdMtrText(r.info)}.`;
+  const stackLine = (r.info.waferMult||1)>1 ? ` Cost uses ${r.waferMult} dies/wafers; yield is multiplied across ${r.yieldStacks} W2W layers.` : "";
+  document.getElementById("selectedNote").innerHTML = `${confBadge(r.info.conf)} <b>${r.foundry} ${r.info.label}</b>: ${r.info.note}<br><span class="small">${mtrLine}${stackLine} Default wafer cost = ${money(r.info.wafer)} per wafer, D0 = ${r.info.d0}/cm², SRAM density=${fmt(r.info.sram)} Mb/mm².</span>`;
 }
-function rowClass(r, inp){return `${r.node===inp.targetNode&&r.foundry===inp.targetFoundry?'target-row ':''}${r.info.conf==='low'?'low-row':''}`}
+function rowClass(r, inp){return `${r.node===inp.targetNode&&r.foundry===inp.targetFoundry?'target-row ':''}`}
 function buildTable(headers, rows){
   return `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody>`;
 }
 function updateNearby(inp){
-  const nodes = nearbyNodes(inp.targetNode);
+  const nodes = nearbyNodes(inp.targetNode, inp.targetFoundry);
   const rows = nodes.map(n=>{
     const r=calc(inp.targetFoundry,n,inp);
-    return `<tr class="${rowClass(r,inp)}"><td>${n} nm</td><td>${r.info.label} ${confBadge(r.info.conf)}</td><td>${fmt(r.info.density)}×</td><td>${fmt(r.logicArea)}</td><td>${fmt(r.sramArea)}</td><td>${fmt(r.totalArea)}</td><td>${fmt(r.freq)}</td><td>${fmt(r.powerConv)}</td><td>${pct(r.finalYield)}</td><td>${money(r.cost)}</td></tr>`;
+    return `<tr class="${rowClass(r,inp)}"><td>${n} nm</td><td>${r.info.label} ${confBadge(r.info.conf)}</td><td>${fmt(r.info.density)}×</td><td>${stdMtrText(r.info)}</td><td>${fmt(r.logicArea)}</td><td>${fmt(r.sramArea)}</td><td>${fmt(r.totalArea)}</td><td>${fmt(r.freq)}</td><td>${fmt(r.powerConv)}</td><td>${pct(r.finalYield)}</td><td>${money(r.cost)}</td></tr>`;
   });
-  document.getElementById("nearbyTable").innerHTML = buildTable(["Node","Process / Confidence","Logic Density","Logic Area mm²","SRAM mm²","Total Area mm²","Frequency GHz","Power W","Yield","Cost"], rows);
+  document.getElementById("nearbyTable").innerHTML = buildTable(["Node","Process / Confidence","Density ×28","Std TSMC MTR","Logic Area mm²","SRAM mm²","Total Area mm²","Frequency GHz","Power W","Yield","Cost"], rows);
 }
 function updateCompare(inp){
-  const rows = FOUND_ORD.map(f=>{
+  const rows = FOUND_ORD.filter(f=>isAvailableNode(f,inp.targetNode)).map(f=>{
     const r=calc(f,inp.targetNode,inp);
-    return `<tr class="${r.info.conf==='low'?'low-row':''}"><td>${f}</td><td>${r.info.label} ${confBadge(r.info.conf)}</td><td>${fmt(r.totalArea)}</td><td>${fmt(r.powerConv)}</td><td>${fmt(r.freq)}</td><td>${pct(r.finalYield)}</td><td>${money(r.cost)}</td><td>${r.info.note}</td></tr>`;
+    return `<tr><td>${f}</td><td>${r.info.label} ${confBadge(r.info.conf)}</td><td>${stdMtrText(r.info)}</td><td>${fmt(r.totalArea)}</td><td>${fmt(r.powerConv)}</td><td>${fmt(r.freq)}</td><td>${pct(r.finalYield)}</td><td>${money(r.cost)}</td><td>${r.info.note}</td></tr>`;
   });
-  document.getElementById("compareTable").innerHTML = buildTable(["Foundry","Process","Total Area mm²","Converged Power W","Frequency GHz","Yield","Cost","Notes"], rows);
+  document.getElementById("compareTable").innerHTML = buildTable(["Foundry","Process","Std TSMC MTR","Total Area mm²","Converged Power W","Frequency GHz","Yield","Cost","Notes"], rows);
 }
 function updateDataTable(){
   const rows=[];
   for(const f of FOUND_ORD){
-    for(const n of NODE_ORDER){
+    for(const n of availableNodes(f)){
       const d=DATA[f][n];
-      rows.push(`<tr class="${d.conf==='low'?'low-row':''}"><td>${f}</td><td>${n} nm</td><td>${d.label} ${confBadge(d.conf)}</td><td>${fmt(d.density)}</td><td>${fmt(d.speed)}</td><td>${fmt(d.energy)}</td><td>${fmt(d.sram)}</td><td>${fmt(d.vdd)}</td><td>${money(d.wafer)}</td><td>${d.d0.toFixed(3)}</td><td>${d.note}</td></tr>`);
+      rows.push(`<tr><td>${f}</td><td>${n} nm</td><td>${d.label} ${confBadge(d.conf)}</td><td>${fmt(d.density)}</td><td>${stdMtrText(d)}</td><td>${rawMtrText(d)}</td><td>${fmt(d.speed)}</td><td>${fmt(d.energy)}</td><td>${fmt(d.sram)}</td><td>${fmt(d.vdd)}</td><td>${money(d.wafer)}${(d.waferMult||1)>1?" × "+d.waferMult:""}</td><td>${d.d0.toFixed(3)}</td><td>${d.note}</td></tr>`);
     }
   }
-  document.getElementById("dataTable").innerHTML = buildTable(["Foundry","Node","Process","Density ×28","Frequency ×28","Same-Freq Energy ×28","SRAM Mb/mm²","VDD","Wafer","D0","Notes"], rows);
+  document.getElementById("dataTable").innerHTML = buildTable(["Foundry","Node","Process","Density ×28","Std TSMC MTR","Raw τ MTR","Frequency ×28","Same-Freq Energy ×28","SRAM Mb/mm²","VDD","Wafer","D0","Notes"], rows);
 }
 function metricValue(r, metric){
   switch(metric){
@@ -602,14 +920,16 @@ function metricValue(r, metric){
     case "yield": return r.finalYield*100;
     case "cost": return r.cost;
     case "density": return r.info.density;
+    case "stdMtr": return stdMtr(r.info);
     default: return r.totalArea;
   }
 }
-function metricLabel(metric){return {area:"Total Area / mm²", powerConv:"Power @ Converged Frequency / W", powerSame:"Same-Frequency Power / W", freq:"Converged Frequency / GHz", yield:"Total Yield / %", cost:"Cost per good die / $", density:"Logic Density / ×28nm"}[metric]||metric}
+function metricLabel(metric){return {area:"Total Area / mm²", powerConv:"Power @ Converged Frequency / W", powerSame:"Same-Frequency Power / W", freq:"Converged Frequency / GHz", yield:"Total Yield / %", cost:"Cost per good die / $", density:"Logic Density / ×28nm", stdMtr:"Standard TSMC-style MTR / MTr/mm²"}[metric]||metric}
 function metricFmt(metric,v){
   if(metric==="cost") return money(v);
   if(metric==="yield") return v.toFixed(1)+"%";
   if(metric==="density") return v.toFixed(1)+"×";
+  if(metric==="stdMtr") return fmt(v)+" MTr/mm²";
   return fmt(v);
 }
 function setupCanvas(canvas){
@@ -625,18 +945,18 @@ function drawTrend(inp){
   const canvas=document.getElementById("trendChart"); const {ctx,w,h}=setupCanvas(canvas);
   ctx.clearRect(0,0,w,h);
   const pad={l:62,r:24,t:24,b:58};
-  const nodes = NODE_ORDER.filter(n=> inp.includeLow || FOUND_ORD.some(f=>DATA[f][n].conf!=="low"));
-  const series = FOUND_ORD.map(f=>{
-    const vals = nodes.map(n=>metricValue(calc(f,n,inp),activeMetric));
-    return {name:f, vals, color:COLORS[f]};
-  });
-  let vals=series.flatMap(s=>s.vals).filter(isFinite);
+  const nodes = NODE_ORDER.filter(n=>FOUND_ORD.some(f=>isAvailableNode(f,n)));
+  const series = selectedTrendFoundries().map(f=>{
+    const pts = nodes.map((n,i)=>isAvailableNode(f,n) ? {i,n,v:metricValue(calc(f,n,inp),activeMetric)} : null).filter(Boolean);
+    return {name:f, pts, color:COLORS[f]};
+  }).filter(s=>s.pts.length>0);
+  let vals=series.flatMap(s=>s.pts.map(p=>p.v)).filter(isFinite);
+  if(!vals.length){ctx.fillStyle="#cbd9ec"; ctx.font="13px Inter, sans-serif"; ctx.fillText("No available process data for the selected foundry curves",20,30); return;}
   let min=Math.min(...vals), max=Math.max(...vals);
   if(activeMetric==="yield"){min=Math.max(0,min*.92); max=Math.min(100, max*1.05)} else {min=Math.max(0,min*.9); max=max*1.12}
   if(max===min){max+=1;min-=1}
-  const x=i=>pad.l + (w-pad.l-pad.r)*(i/(nodes.length-1));
+  const x=i=>pad.l + (w-pad.l-pad.r)*(i/(Math.max(nodes.length-1,1)));
   const y=v=>pad.t + (h-pad.t-pad.b)*(1-(v-min)/(max-min));
-  // background grid
   ctx.strokeStyle="rgba(148,163,184,.14)"; ctx.lineWidth=1; ctx.font="12px Inter, sans-serif"; ctx.fillStyle="#9fb0c9";
   for(let g=0; g<=4; g++){
     const yy=pad.t+(h-pad.t-pad.b)*g/4; ctx.beginPath(); ctx.moveTo(pad.l,yy); ctx.lineTo(w-pad.r,yy); ctx.stroke();
@@ -646,10 +966,9 @@ function drawTrend(inp){
   ctx.fillStyle="#ddecff"; ctx.font="bold 13px Inter, sans-serif"; ctx.fillText(metricLabel(activeMetric),pad.l,pad.t-6);
   series.forEach(s=>{
     ctx.strokeStyle=s.color; ctx.lineWidth=s.name===inp.targetFoundry?3:2; ctx.beginPath();
-    s.vals.forEach((v,i)=>{const xx=x(i), yy=y(v); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy)}); ctx.stroke();
-    s.vals.forEach((v,i)=>{const xx=x(i), yy=y(v); ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(xx,yy,s.name===inp.targetFoundry?4:3,0,Math.PI*2); ctx.fill();});
+    s.pts.forEach((p,j)=>{const xx=x(p.i), yy=y(p.v); if(j===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy)}); ctx.stroke();
+    s.pts.forEach(p=>{const xx=x(p.i), yy=y(p.v); ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(xx,yy,s.name===inp.targetFoundry?4:3,0,Math.PI*2); ctx.fill();});
   });
-  // legend
   let lx=pad.l, ly=h-10; ctx.font="12px Inter, sans-serif";
   series.forEach(s=>{ctx.fillStyle=s.color; ctx.fillRect(lx,ly-10,10,10); ctx.fillStyle="#cbd9ec"; ctx.fillText(s.name,lx+15,ly); lx+=82;});
 }
@@ -664,7 +983,7 @@ function drawBar(inp){
     {key:"yield", label:"Yield", lowGood:false},
     {key:"cost", label:"Cost", lowGood:true}
   ];
-  const rows=FOUND_ORD.map(f=>calc(f,inp.targetNode,inp));
+  const rows=FOUND_ORD.filter(f=>isAvailableNode(f,inp.targetNode)).map(f=>calc(f,inp.targetNode,inp));
   const compact=w<620;
   const tiny=w<460;
   const pad={
@@ -707,11 +1026,11 @@ function drawBar(inp){
     ctx.font=`${tiny?9:10}px Inter, sans-serif`;
     ctx.fillText(m.lowGood ? "lower better" : "higher better", 12, labelY+14, pad.l-18);
 
-    const barH=Math.max(7, Math.min(tiny?12:14, (rowH-18)/(FOUND_ORD.length+0.5)));
+    const barH=Math.max(7, Math.min(tiny?12:14, (rowH-18)/(Math.max(rows.length,1)+0.5)));
     const blockH=barH+seriesGap;
-    const startY=yBase+Math.max(8,(rowH-(FOUND_ORD.length*blockH))/2);
-    FOUND_ORD.forEach((f,fi)=>{
-      const r=rows[fi];
+    const startY=yBase+Math.max(8,(rowH-(rows.length*blockH))/2);
+    rows.forEach((r,fi)=>{
+      const f=r.foundry;
       const raw=metricValue(r,m.key);
       let sc=(raw-mn)/(mx-mn || 1);
       if(m.lowGood) sc=1-sc;
@@ -740,7 +1059,7 @@ function drawBar(inp){
   ctx.font=`${tiny?10:11}px Inter, sans-serif`;
   const itemW=tiny?70:Math.min(92, Math.max(72, plotW/4));
   const perRow=Math.max(1, Math.floor(plotW/itemW));
-  FOUND_ORD.forEach((f,i)=>{
+  rows.map(r=>r.foundry).forEach((f,i)=>{
     const row=Math.floor(i/perRow), col=i%perRow;
     const lx=plotX+col*itemW;
     const ly=h-18-row*15;
@@ -756,7 +1075,7 @@ function roundRect(ctx,x,y,w,h,r,fill,stroke){
 function drawRadar(inp){
   const canvas=document.getElementById("radarChart"); const {ctx,w,h}=setupCanvas(canvas);
   ctx.clearRect(0,0,w,h);
-  const nodes=nearbyNodes(inp.targetNode);
+  const nodes=nearbyNodes(inp.targetNode, inp.targetFoundry);
   const center={x:w/2,y:h/2+10}; const R=Math.min(w,h)*.31;
   const labels=["Area↓","Power↓","Freq↑","Yield↑","Cost↓"];
   const axes=labels.length;
@@ -781,29 +1100,28 @@ function updateCharts(inp){drawTrend(inp); drawBar(inp); drawRadar(inp)}
 function update(){
   const inp=getInput(); updateRangeLabels(inp);
   const r=calc(inp.targetFoundry,inp.targetNode,inp);
-  updateCards(inp,r); updateNearby(inp); updateCompare(inp); updateCharts(inp);
+  updateCards(inp,r); updateWaferMap(inp,r); updateNearby(inp); updateCompare(inp); updateCharts(inp);
 }
 function toast(msg){const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800)}
 function currentSummary(){
   const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp);
   return `CMOS PPAC Scaling: ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} -> ${r.foundry} ${r.info.label}\nAuthor: Liangdacheng with GPT5.5\nLogic Area: ${fmt(inp.logicArea)} -> ${fmt(r.logicArea)} mm²\nTotal Area: ${fmt(r.currentTotalArea)} -> ${fmt(r.totalArea)} mm²\nFrequency: ${fmt(inp.frequency)} -> ${fmt(r.freq)} GHz\nPower @ converged frequency: ${fmt(inp.logicPower)} -> ${fmt(r.powerConv)} W\nYield: ${pct(r.finalYield)}\nCost/good die: ${money(r.cost)}\nNotes: ${r.info.note}`;
 }
-function exportCSV(){
-  const inp=getInput();
-  let rows=[["foundry","node_nm","process","confidence","logic_density_x28","logic_area_mm2","sram_area_mm2","total_area_mm2","freq_ghz","power_same_freq_w","power_conv_w","yield","gross_dies","wafer_cost_usd","cost_good_die_usd","note"]];
-  for(const f of FOUND_ORD){for(const n of NODE_ORDER){const r=calc(f,n,inp); if(!inp.includeLow && r.info.conf==='low') continue; rows.push([f,n,r.info.label,r.info.conf,r.info.density,r.logicArea,r.sramArea,r.totalArea,r.freq,r.powerSame,r.powerConv,r.finalYield,r.gd,r.waferCost,r.cost,r.info.note]);}}
-  const csv=rows.map(row=>row.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="cmos_scaling_results.csv"; a.click(); URL.revokeObjectURL(a.href); toast("CSV exported");
-}
 function bind(){
-  ids.forEach(id=>els[id].addEventListener(id==="includeLow"||id==="showSameFreq"?"change":"input", update));
-  [els.currentFoundry,els.currentNode,els.targetFoundry,els.targetNode].forEach(e=>e.addEventListener("change", update));
+  const passiveIds = ids.filter(id=>!["currentFoundry","currentNode","targetFoundry","targetNode"].includes(id));
+  passiveIds.forEach(id=>els[id].addEventListener(id==="showSameFreq"?"change":"input", update));
+  els.currentFoundry.addEventListener("change",()=>{populateNodeSelect(els.currentNode, els.currentFoundry.value, els.currentNode.value); update();});
+  els.targetFoundry.addEventListener("change",()=>{populateNodeSelect(els.targetNode, els.targetFoundry.value, els.targetNode.value); update();});
+  [els.currentNode,els.targetNode].forEach(e=>e.addEventListener("change", update));
   document.getElementById("metricChips").addEventListener("click",e=>{if(e.target.matches(".chip")){document.querySelectorAll("#metricChips .chip").forEach(c=>c.classList.remove("active")); e.target.classList.add("active"); activeMetric=e.target.dataset.metric; update();}});
+  const waferIds=["mapDieW","mapDieH","mapWaferDia","mapEdge","mapD0","mapAlpha","mapLineYield","mapPpm","mapWaferCost","mapEdgeBoost","mapSeed","mapStackLayers","mapUseStack"];
+  waferIds.forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener(id==="mapUseStack"?"change":"input",()=>{const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp); updateWaferMap(inp,r);});});
+  const syncBtn=document.getElementById("btnSyncWafer"); if(syncBtn) syncBtn.addEventListener("click",()=>{syncWaferFromTarget(); toast("Wafer map synced from target node")});
+  const redrawBtn=document.getElementById("btnRedrawWafer"); if(redrawBtn) redrawBtn.addEventListener("click",()=>{const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp); updateWaferMap(inp,r); toast("Wafer map redrawn")});
   document.getElementById("btnCopy").addEventListener("click", async()=>{try{await navigator.clipboard.writeText(currentSummary()); toast("Summary copied")}catch(e){toast("Copy failed; please select manually")}});
-  document.getElementById("btnExport").addEventListener("click", exportCSV);
-  window.addEventListener("resize", ()=>updateCharts(getInput()));
+  window.addEventListener("resize", ()=>{const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp); updateCharts(inp); updateWaferMap(inp,r);});
 }
-initSelects(); bind(); updateDataTable(); update();
+initSelects(); initTrendFoundryFilters(); bind(); updateDataTable(); update();
 </script>
 </body>
 </html>
