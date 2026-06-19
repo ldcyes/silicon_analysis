@@ -268,7 +268,7 @@
           <span class="kicker"><span class="pulse"></span> PPAC Scaling Studio · CMOS</span>
           <h1><span class="grad">CMOS PPAC</span></h1>
           <div class="hero-subline">Area · Power · Frequency · Yield · Cost</div>
-          <p class="subtitle">Enter the current logic area, active power, and converged frequency, then choose the source and target foundry/node. The tool estimates area, power, converged frequency, yield, and cost per good die for the target node and nearby nodes. Built-in defaults cover TSMC, Samsung, Intel, SMIC, and Huawei τ at available 28/16/14/12/10/7/6/5/4/3/2nm-class nodes. Low-confidence and mapped placeholder processes are removed from the selectable dataset.</p>
+          <p class="subtitle">Enter the current logic area, active power, and converged frequency, then choose the source and target foundry/node. The tool estimates area, power, converged frequency, yield, and cost per good die for the target node and nearby nodes. Built-in defaults cover TSMC, Samsung, Intel, SMIC, GlobalFoundries/GF, and Huawei τ at available 28/22/16/14/12/10/7/6/5/4/3/2nm-class nodes. Low-confidence and mapped placeholder processes are removed from the selectable dataset.</p>
           <div class="author-credit">Author: Liangdacheng with GPT5.5</div>
           <div class="hero-actions">
             <a class="btn primary" href="#inputs">Start Scaling</a>
@@ -322,6 +322,7 @@
           <h3><span class="tag-dot" style="background:var(--green);box-shadow:0 0 18px var(--green)"></span>Yield & Cost</h3>
           <div class="form-grid">
             <div><label>Wafer Diameter / mm</label><input id="waferDiameter" type="number" min="100" step="1" value="300"></div>
+            <div><label>Cost Basis</label><select id="costBasis"><option value="intro" selected>IBS intro wafer price</option><option value="mfg">IBS manufacturing wafer cost</option></select><div class="small">Intro price reproduces the die-cost table; manufacturing cost uses the 50K-WPM tooling table.</div></div>
             <div><label>Package + Test / $ per die</label><input id="pkgTest" type="number" min="0" step="0.1" value="2.0"></div>
             <div><label>NRE Amortization / $</label><input id="nre" type="number" min="0" step="1000000" value="0"></div>
             <div><label>Production Volume</label><input id="volume" type="number" min="1" step="1000" value="1000000"></div>
@@ -331,9 +332,11 @@
             <input class="full" id="alpha" type="range" min="0.6" max="8" step="0.1" value="3">
             <div class="full inline"><label>D0 multiplier: defect-density calibration</label><span class="range-value" id="d0MultVal">1.00×</span></div>
             <input class="full" id="d0Mult" type="range" min="0.25" max="3.0" step="0.05" value="1">
-            <div class="full inline"><label>Wafer cost multiplier: quote/region/customer calibration</label><span class="range-value" id="costMultVal">1.00×</span></div>
-            <input class="full" id="costMult" type="range" min="0.5" max="2.0" step="0.05" value="1">
-            <div><label>Huawei τ W2W Stack Layers</label><select id="taoStackLayers"><option value="2">2-layer W2W</option><option value="3">3-layer W2W</option></select><div class="small">Only applies to Huawei τ/LogicFold roadmap nodes; cost × layers, yield ^ layers.</div></div>
+            <div class="full inline"><label>Wafer cost/price multiplier: scenario, margin, ramp, or foundry quote calibration</label><span class="range-value" id="costMultVal">1.00×</span></div>
+            <input class="full" id="costMult" type="range" min="0.5" max="4.0" step="0.05" value="1">
+            <div><label>Huawei τ W2W Stack Layers</label><select id="taoStackLayers"><option value="2">2-layer W2W</option><option value="3">3-layer W2W</option></select><div class="small">Only applies to Huawei τ/LogicFold roadmap nodes; cost × layers, yield = layer^N × bonding^(N−1).</div></div>
+            <div class="full inline"><label>W2W Bonding Yield / Interface</label><span class="range-value" id="taoBondYieldVal">99.5%</span></div>
+            <input class="full" id="taoBondYield" type="range" min="0.95" max="1" step="0.001" value="0.995">
           </div>
           <div class="toggle-row">
             <label class="toggle"><input type="checkbox" id="showSameFreq" checked>Show same-frequency power</label>
@@ -370,10 +373,11 @@
             <div><label>Negative-binomial α</label><input id="mapAlpha" type="number" min="0.1" step="0.1" value="3"></div>
             <div><label>Line / Parametric Yield / %</label><input id="mapLineYield" type="number" min="0" max="100" step="0.1" value="95"></div>
             <div><label>Extra Die Failures / PPM</label><input id="mapPpm" type="number" min="0" max="1000000" step="10" value="1000"></div>
-            <div><label>Single Wafer Cost / $</label><input id="mapWaferCost" type="number" min="0" step="100" value="12000"></div>
+            <div><label>Single Wafer Cost / $</label><input id="mapWaferCost" type="number" min="0" step="100" value="4024"></div>
             <div><label>Edge Defect Boost</label><input id="mapEdgeBoost" type="number" min="0" step="0.05" value="0.60"></div>
             <div><label>Random Seed</label><input id="mapSeed" type="number" step="1" value="2026"></div>
             <div><label>Huawei τ W2W Layers</label><select id="mapStackLayers"><option value="2">2 wafers / dies</option><option value="3">3 wafers / dies</option></select><div class="small">Used when stack mode is enabled for Huawei τ/LogicFold.</div></div>
+            <div><label>W2W Bonding Yield / Interface (%)</label><input id="mapBondYield" type="number" min="90" max="100" step="0.01" value="99.5"><div class="small">Slide formula: Yfolding = Ytop × Ybottom × Ybonding.</div></div>
             <label class="toggle full"><input type="checkbox" id="mapUseStack" checked>Use W2W stack for Huawei τ: cost × layers, pass map = intersection of all layers</label>
           </div>
           <div class="wafer-actions">
@@ -396,7 +400,7 @@
     </section>
 
     <section id="charts" class="section">
-      <div class="section-title"><h2>Trend Charts</h2><div class="hint">A smaller node label is not necessarily a physically equivalent process across foundries. Huawei τ/LogicFold raw MTR is converted to standard TSMC-style MTR by ×2/3 before area scaling. This is an early estimator, not a replacement for PDK/cell-library evaluation.</div></div>
+      <div class="section-title"><h2>Trend Charts</h2><div class="hint">A smaller node label is not necessarily a physically equivalent process across foundries. Huawei τ/LogicFold raw MTR is converted to standard TSMC-style MTR by ×2/3, then slide-calibrated chip-density gains are used for area scaling when available. This is an early estimator, not a replacement for PDK/cell-library evaluation.</div></div>
       <div class="results-layout">
         <div class="panel">
           <h3><span class="tag-dot"></span>Foundry Trends: Area / Power / Frequency / Cost</h3>
@@ -451,16 +455,29 @@
       </div>
     </section>
 
+    <section id="huawei-validation" class="section">
+      <div class="section-title"><h2>Huawei LogicFolding Slide Validation</h2><div class="hint">Calibration from the uploaded Huawei slides. These values are treated as roadmap / case-study parameters, not public PDK signoff.</div></div>
+      <div class="source-grid">
+        <div class="source"><b>Chip Density Calibration</b>The LogicFolding density slide uses 2025 as 1×, then 2026 = 1.6×, 2027 = 1.7×, and 2029 = 1.8×. The Huawei τ entries now keep the raw 2T MTR, but area scaling uses the slide-calibrated standardized/effective MTR: 2025 103.3, 2026 165.3, 2027 175.7, 2029 186.0 MTr/mm².</div>
+        <div class="source"><b>DSP Case Cross-Check</b>The DSP slide shows LogicFolding PPA gains of die area −40%, clock frequency +37%, buffer count −56%, wire length −25%, wire capacitance −34%, and total power −24%. The −40% area result corresponds to about 1.67× density, validating the 2026 1.6× chip-density anchor.</div>
+        <div class="source"><b>XPU PPA Cross-Check</b>The performance/power slide reports 2026/2027 gains by workload: CPU single-core +15%/+44%, CPU multi-core +24%/+56%, GPU +38%/+87%, NPU +140%/+213%; power-efficiency gains are CPU +12%/+34%, GPU +40%/+78%, NPU +81%/+118%. These are stored in Huawei τ node notes; default frequency still follows the P-core roadmap.</div>
+        <div class="source"><b>W2W Yield Formula</b>The cost/yield slide states Y<sub>Folding</sub> = Y<sub>Top</sub> × Y<sub>Bottom</sub> × Y<sub>Bonding</sub>. The tool now computes Huawei τ stack yield as layerYield<sup>N</sup> × bondingYield<sup>N−1</sup>, with a configurable 2-/3-layer W2W stack and bonding-yield input.</div>
+      </div>
+    </section>
+
     <section id="sources" class="section">
       <div class="section-title"><h2>Model Sources & Limits</h2><div class="hint">Numbers in this page are default estimation parameters, not foundry quotes or PDK signoff results.</div></div>
       <div class="source-grid">
         <div class="source"><b>Method Backbone: Scaling Factors</b>Based on Stillmaker & Baas 2017 CMOS scaling equations and the DeepScaleTool 2021 idea of fitting PPAC trends from public silicon data, then converting a design with scaling factors. This page implements three normalized factor groups: relative density, same-frequency energy, and converged frequency.</div>
         <div class="source"><b>TSMC</b>Default N7/N6, N5/N4, N3, and N2 PPA anchors come from public TSMC pages/releases. N2 SRAM defaults use the roughly 38 Mb/mm² SRAM macro figure reported by TSMC Research. Less-public 16/14/12/10nm points are interpolated.</div>
-        <div class="source"><b>Samsung</b>Default SF7, SF5, SF4, and SF3 PPA anchors come from Samsung Foundry logic-node pages and releases. SF2 is treated as a roadmap-level estimate.</div>
+        <div class="source"><b>Samsung</b>Default SF7, SF5, SF4, and SF3 PPA anchors come from Samsung Foundry logic-node pages and releases; removed low-confidence SF2 placeholders from the selectable dataset.</div>
         <div class="source"><b>Intel</b>Default Intel 4, Intel 3, and Intel 18A factors come from public Intel Foundry materials. Nominal 14/10/7/6/5/4/3/2nm labels map to Intel 14, 10SF/Intel 7, Intel 4, Intel 3, and 18A classes; they are not exact nm equivalents.</div>
         <div class="source"><b>SMIC</b>28nm, 14nm, and N+1/N+2-class points are anchored to public reporting and known service nodes. Unverified extrapolated SMIC placeholders have been removed from the selectable dataset.</div>
-        <div class="source"><b>Cost / Yield</b>Yield uses a negative-binomial model. Cost uses gross dies per wafer, die yield, line yield, package/test, and NRE amortization. Wafer cost and D0 are adjustable defaults; real pricing depends on customer, capacity, region, masks, IP, test, and yield ramp.</div>
-        <div class="source"><b>Wafer Yield Map</b>The wafer map uses full rectangular dies inside the printable wafer radius, negative-binomial die yield, optional die-level PPM failures, edge defect boost, and deterministic pseudo-random pass/fail rendering. Huawei τ stack mode supports 2-/3-layer W2W: total cost scales with layer count and final stack pass is the product of all layer pass probabilities.</div>
+        <div class="source"><b>GlobalFoundries / GF</b>Added only production-proven, non-placeholder nodes: 28SLP/SLPe, 22FDX FD-SOI, 14LPP FinFET, and 12LP/12LP+. GF 22FDX is kept as a true 22nm FD-SOI point and is not mapped to 16/14nm; GF 7nm and beyond remain excluded because the public 7nm program was put on hold.</div>
+        <div class="source"><b>Cost / Yield</b>Yield uses a negative-binomial model. Cost uses gross dies per wafer, die yield, line yield, package/test, and NRE amortization. Two IBS-style uploaded tables are supported. Manufacturing wafer cost is checked against the 50K-WPM tooling table: 28=$1,789, 16=$2,618, 7=$3,492, 5=$4,637, 4=$6,285, 3=$8,538, 2=$11,809. Intro wafer price is checked against the transistor-cost table: 28=$3,500, 16=$5,708, 10=$8,389, 7=$9,965, 5=$15,022, 4=$17,128, 3=$20,124.6, 2=$28,750. Choose the cost basis in Yield & Cost; missing 14/12/6 are interpolated.</div>
+        <div class="source"><b>Wafer Yield Map</b>The wafer map uses full rectangular dies inside the printable wafer radius, negative-binomial die yield, optional die-level PPM failures, edge defect boost, and deterministic pseudo-random pass/fail rendering. Huawei τ stack mode supports 2-/3-layer W2W: total cost scales with layer count and final stack pass follows the slide formula Yfolding = Ytop × Ybottom × Ybonding, generalized as layerYield^N × bondingYield^(N−1).</div>
+        <div class="source"><b>IBS Cost Baselines</b>Manufacturing cost baseline: 28nm $1,789; 16nm $2,618; 7nm $3,492; 5nm $4,637; 4nm $6,285; 3nm $8,538; 2nm $11,809; interpolated 14nm $2,813, 12nm $3,024, 10nm $3,249, 6nm $4,024. Intro wafer price baseline from the transistor-cost table: 28nm $3,500; 16nm $5,708; 10nm $8,389; 7nm $9,965; 5nm $15,022; 4nm $17,128; 3nm $20,124.6; 2nm $28,750; interpolated 14nm $6,601.67, 12nm $7,495.33, 6nm $12,493.50. Huawei τ W2W multiplies the selected single-wafer baseline by the selected stack layer count.</div>
+        <div class="source"><b>IBS Die-Cost Cross-Check</b>The intro-price table is internally consistent as wafer price / net dies per wafer: 28nm $3,500 / 465.08 ≈ $7.53, 16nm $5,708 / 386.85 ≈ $14.75, 10nm $8,389 / 564.22 ≈ $14.87, 7nm $9,965 / 388.88 ≈ $25.62, 5nm $15,022 / 466.80 ≈ $32.18, 4nm $17,128 / 443.04 ≈ $38.66, 3nm $20,124.6 / 444.58 ≈ $45.27, 2nm $28,750 / 448.06 ≈ $64.17.</div>
       </div>
       <p class="small" style="margin-top:14px">Recommended use: use this tool for early architecture/technology trade-offs. During a real project, replace defaults with the target foundry PDK, standard-cell library, SRAM compiler, floorplan, STA, power, IR-drop, and thermal signoff results.</p>
     </section>
@@ -469,64 +486,70 @@
   <div id="toast" class="toast">Copied</div>
 
 <script>
-const NODE_ORDER = [28,16,14,12,10,7,6,5,4,3,2];
-const FOUND_ORD = ["TSMC","Samsung","Intel","SMIC","Huawei τ"];
-const COLORS = {TSMC:"#39d9ff", Samsung:"#ff4fd8", Intel:"#7c8cff", SMIC:"#39f5a6", "Huawei τ":"#ffe27a"};
+const NODE_ORDER = [28,22,16,14,12,10,7,6,5,4,3,2];
+const FOUND_ORD = ["TSMC","Samsung","Intel","SMIC","GF","Huawei τ"];
+const COLORS = {TSMC:"#39d9ff", Samsung:"#ff4fd8", Intel:"#7c8cff", SMIC:"#39f5a6", GF:"#ff9f43", "Huawei τ":"#ffe27a"};
 const CONF_LABEL = {high:"High", medium:"Medium", roadmap:"Roadmap"};
 const DATA = {
   TSMC:{
-    28:{label:"N28", density:1.00, speed:1.00, energy:1.00, sram:5.75, vdd:.90, wafer:3000, d0:.08, conf:"high", note:"Public mature node; used as this tool’s 28nm normalized baseline."},
-    16:{label:"N16/N16FF", density:2.00, speed:1.50, energy:.40, sram:10.45, vdd:.80, wafer:6000, d0:.10, conf:"medium", note:"Anchored by DeepScaleTool/public silicon trends; official N7 density is about 3× N16."},
-    12:{label:"N12FFC", density:2.40, speed:1.65, energy:.34, sram:12.0, vdd:.78, wafer:6500, d0:.11, conf:"medium", note:"TSMC 12FFC+ is publicly described as improving gate density/speed/power; values are interpolated between N16 and N10/N7."},
-    10:{label:"N10", density:3.00, speed:1.80, energy:.30, sram:15.0, vdd:.76, wafer:8000, d0:.13, conf:"medium", note:"Short-lived node; density and efficiency are used as an intermediate point between 16 and 7."},
-    7:{label:"N7", density:6.00, speed:1.95, energy:.18, sram:27.1, vdd:.72, wafer:9500, d0:.15, conf:"high", note:"TSMC public anchor: N7 vs N16 is about 3× logic density, 30% speed gain, and 55% power saving."},
-    6:{label:"N6", density:7.08, speed:1.98, energy:.18, sram:28.5, vdd:.72, wafer:10000, d0:.14, conf:"medium", note:"N6 is treated as an N7-compatible shrink; public material commonly cites about 18% logic-density improvement."},
-    5:{label:"N5", density:10.80, speed:2.24, energy:.126, sram:34.8, vdd:.70, wafer:17000, d0:.17, conf:"high", note:"N5 vs N7 uses public anchors of 1.8× density, 15% speed gain, or 30% power reduction."},
-    4:{label:"N4P", density:11.45, speed:2.49, energy:.098, sram:35.0, vdd:.70, wafer:18000, d0:.16, conf:"high", note:"N4P public anchor: about 11% performance, 22% power efficiency, and 6% density improvement vs N5."},
-    3:{label:"N3E", density:17.28, speed:2.69, energy:.088, sram:34.6, vdd:.68, wafer:21000, d0:.20, conf:"high", note:"N3E public anchor: about 20% speed, >30% power saving, and 1.6× logic density vs N5. SRAM scaling slows down."},
-    2:{label:"N2/N2P", density:20.74, speed:3.17, energy:.056, sram:38.1, vdd:.65, wafer:30000, d0:.24, conf:"high", note:"N2/N2P uses about 1.2× density, 18% speed gain, and 36% power reduction vs N3E; SRAM macro is about 38 Mb/mm²."}
+    28:{label:"N28", density:1.00, speed:1.00, energy:1.00, sram:5.75, vdd:.90, wafer:1789, intro:3500, d0:.08, conf:"high", note:"Public mature node; used as this tool’s 28nm normalized baseline."},
+    16:{label:"N16/N16FF", density:2.00, speed:1.50, energy:.40, sram:10.45, vdd:.80, wafer:2618, intro:5708, d0:.10, conf:"medium", note:"Anchored by DeepScaleTool/public silicon trends; official N7 density is about 3× N16."},
+    12:{label:"N12FFC", density:2.40, speed:1.65, energy:.34, sram:12.0, vdd:.78, wafer:3024, intro:7495.33, d0:.11, conf:"medium", note:"TSMC 12FFC+ is publicly described as improving gate density/speed/power; values are interpolated between N16 and N10/N7."},
+    10:{label:"N10", density:3.00, speed:1.80, energy:.30, sram:15.0, vdd:.76, wafer:3249, intro:8389, d0:.13, conf:"medium", note:"Short-lived node; density and efficiency are used as an intermediate point between 16 and 7."},
+    7:{label:"N7", density:6.00, speed:1.95, energy:.18, sram:27.1, vdd:.72, wafer:3492, intro:9965, d0:.15, conf:"high", note:"TSMC public anchor: N7 vs N16 is about 3× logic density, 30% speed gain, and 55% power saving."},
+    6:{label:"N6", density:7.08, speed:1.98, energy:.18, sram:28.5, vdd:.72, wafer:4024, intro:12493.50, d0:.14, conf:"medium", note:"N6 is treated as an N7-compatible shrink; public material commonly cites about 18% logic-density improvement."},
+    5:{label:"N5", density:10.80, speed:2.24, energy:.126, sram:34.8, vdd:.70, wafer:4637, intro:15022, d0:.17, conf:"high", note:"N5 vs N7 uses public anchors of 1.8× density, 15% speed gain, or 30% power reduction."},
+    4:{label:"N4P", density:11.45, speed:2.49, energy:.098, sram:35.0, vdd:.70, wafer:6285, intro:17128, d0:.16, conf:"high", note:"N4P public anchor: about 11% performance, 22% power efficiency, and 6% density improvement vs N5."},
+    3:{label:"N3E", density:17.28, speed:2.69, energy:.088, sram:34.6, vdd:.68, wafer:8538, intro:20124.60, d0:.20, conf:"high", note:"N3E public anchor: about 20% speed, >30% power saving, and 1.6× logic density vs N5. SRAM scaling slows down."},
+    2:{label:"N2/N2P", density:20.74, speed:3.17, energy:.056, sram:38.1, vdd:.65, wafer:11809, intro:28750, d0:.24, conf:"high", note:"N2/N2P uses about 1.2× density, 18% speed gain, and 36% power reduction vs N3E; SRAM macro is about 38 Mb/mm²."}
   },
   Samsung:{
-    28:{label:"28nm", density:1.00, speed:1.00, energy:1.00, sram:5.5, vdd:.90, wafer:2600, d0:.10, conf:"high", note:"Samsung 28nm mature node, used as the normalized baseline."},
-    14:{label:"14LPP", density:2.05, speed:1.48, energy:.44, sram:10.4, vdd:.80, wafer:5000, d0:.15, conf:"high", note:"Samsung 14nm FinFET is a public mature node; PPA relative to 28nm is model-estimated."},
-    12:{label:"11/12-class", density:2.35, speed:1.58, energy:.39, sram:11.8, vdd:.78, wafer:6000, d0:.17, conf:"medium", note:"Interpolated as a Samsung 11LPP/12-class point."},
-    10:{label:"10LPE/LPP", density:3.00, speed:1.75, energy:.32, sram:15.0, vdd:.75, wafer:7500, d0:.20, conf:"medium", note:"10nm FinFET node, used as the predecessor anchor for SF7 PPA."},
-    7:{label:"7LPP/SF7", density:4.20, speed:2.10, energy:.16, sram:24.0, vdd:.72, wafer:8500, d0:.25, conf:"high", note:"Samsung public anchor: 7LPP vs 10nm offers up to 40% area efficiency, 20% performance, or 50% power reduction."},
-    6:{label:"6LPP", density:4.55, speed:2.16, energy:.15, sram:25.5, vdd:.72, wafer:9000, d0:.24, conf:"medium", note:"6LPP is estimated as an evolution of 7LPP."},
-    5:{label:"SF5/5LPE", density:5.25, speed:2.31, energy:.128, sram:28.0, vdd:.70, wafer:13000, d0:.26, conf:"high", note:"Samsung public anchor: 5nm vs 7nm gives 25% logic area efficiency, 20% lower power, or 10% higher performance."},
-    4:{label:"SF4/4LPP", density:6.20, speed:2.55, energy:.110, sram:29.5, vdd:.70, wafer:14000, d0:.22, conf:"medium", note:"SF4 public materials emphasize 200nm cell height and improved performance; values are interpolated from SF5 to SF3."},
-    3:{label:"SF3", density:8.08, speed:3.00, energy:.064, sram:30.0, vdd:.68, wafer:17000, d0:.34, conf:"high", note:"Samsung public anchor: second-generation 3nm GAA vs 5nm is about 50% lower power, 30% performance gain, and 35% smaller area."},
+    28:{label:"28nm", density:1.00, speed:1.00, energy:1.00, sram:5.5, vdd:.90, wafer:1789, intro:3500, d0:.10, conf:"high", note:"Samsung 28nm mature node, used as the normalized baseline."},
+    14:{label:"14LPP", density:2.05, speed:1.48, energy:.44, sram:10.4, vdd:.80, wafer:2813, intro:6601.67, d0:.15, conf:"high", note:"Samsung 14nm FinFET is a public mature node; PPA relative to 28nm is model-estimated."},
+    12:{label:"11/12-class", density:2.35, speed:1.58, energy:.39, sram:11.8, vdd:.78, wafer:3024, intro:7495.33, d0:.17, conf:"medium", note:"Interpolated as a Samsung 11LPP/12-class point."},
+    10:{label:"10LPE/LPP", density:3.00, speed:1.75, energy:.32, sram:15.0, vdd:.75, wafer:3249, intro:8389, d0:.20, conf:"medium", note:"10nm FinFET node, used as the predecessor anchor for SF7 PPA."},
+    7:{label:"7LPP/SF7", density:4.20, speed:2.10, energy:.16, sram:24.0, vdd:.72, wafer:3492, intro:9965, d0:.25, conf:"high", note:"Samsung public anchor: 7LPP vs 10nm offers up to 40% area efficiency, 20% performance, or 50% power reduction."},
+    6:{label:"6LPP", density:4.55, speed:2.16, energy:.15, sram:25.5, vdd:.72, wafer:4024, intro:12493.50, d0:.24, conf:"medium", note:"6LPP is estimated as an evolution of 7LPP."},
+    5:{label:"SF5/5LPE", density:5.25, speed:2.31, energy:.128, sram:28.0, vdd:.70, wafer:4637, intro:15022, d0:.26, conf:"high", note:"Samsung public anchor: 5nm vs 7nm gives 25% logic area efficiency, 20% lower power, or 10% higher performance."},
+    4:{label:"SF4/4LPP", density:6.20, speed:2.55, energy:.110, sram:29.5, vdd:.70, wafer:6285, intro:17128, d0:.22, conf:"medium", note:"SF4 public materials emphasize 200nm cell height and improved performance; values are interpolated from SF5 to SF3."},
+    3:{label:"SF3", density:8.08, speed:3.00, energy:.064, sram:30.0, vdd:.68, wafer:8538, intro:20124.60, d0:.34, conf:"high", note:"Samsung public anchor: second-generation 3nm GAA vs 5nm is about 50% lower power, 30% performance gain, and 35% smaller area."},
   },
   Intel:{
-    14:{label:"Intel 14", density:2.05, speed:1.46, energy:.45, sram:10.8, vdd:.80, wafer:6500, d0:.12, conf:"high", note:"Intel 14nm mature production node; PPA is estimated relative to 28-class."},
-    12:{label:"14++/12-class", density:2.40, speed:1.60, energy:.39, sram:12.0, vdd:.78, wafer:7500, d0:.14, conf:"medium", note:"Intel has no mainstream 12nm-named node; interpolated from the 14++/10nm public-class scaling trend."},
-    10:{label:"10SF", density:4.50, speed:1.76, energy:.31, sram:18.0, vdd:.75, wafer:9000, d0:.24, conf:"medium", note:"Mapped to early/mid Intel 10nm/SuperFin."},
-    7:{label:"Intel 7", density:5.20, speed:2.00, energy:.25, sram:22.0, vdd:.72, wafer:11000, d0:.20, conf:"high", note:"Intel 7 is the renamed 10nm Enhanced SuperFin generation; it is not equivalent to TSMC/Samsung 7nm."},
-    4:{label:"Intel 4", density:10.40, speed:2.42, energy:.150, sram:32.0, vdd:.68, wafer:18000, d0:.24, conf:"high", note:"Intel public anchor: Intel 4 vs Intel 7 offers about 2× logic area scaling and >20% perf/W; VLSI reports cite additional iso-power/iso-frequency data."},
-    3:{label:"Intel 3", density:11.23, speed:2.85, energy:.127, sram:33.0, vdd:.66, wafer:20000, d0:.22, conf:"high", note:"Intel public anchor: Intel 3 vs Intel 4 gives about 1.08× chip density and 18% perf/W."},
-    2:{label:"18A/20A class", density:14.60, speed:3.28, energy:.110, sram:35.0, vdd:.64, wafer:23000, d0:.26, conf:"high", note:"Intel 18A public anchor: up to 15% perf/W and 30% chip density vs Intel 3; mapped to 2nm-class."}
+    14:{label:"Intel 14", density:2.05, speed:1.46, energy:.45, sram:10.8, vdd:.80, wafer:2813, intro:6601.67, d0:.12, conf:"high", note:"Intel 14nm mature production node; PPA is estimated relative to 28-class."},
+    12:{label:"14++/12-class", density:2.40, speed:1.60, energy:.39, sram:12.0, vdd:.78, wafer:3024, intro:7495.33, d0:.14, conf:"medium", note:"Intel has no mainstream 12nm-named node; interpolated from the 14++/10nm public-class scaling trend."},
+    10:{label:"10SF", density:4.50, speed:1.76, energy:.31, sram:18.0, vdd:.75, wafer:3249, intro:8389, d0:.24, conf:"medium", note:"Mapped to early/mid Intel 10nm/SuperFin."},
+    7:{label:"Intel 7", density:5.20, speed:2.00, energy:.25, sram:22.0, vdd:.72, wafer:3492, intro:9965, d0:.20, conf:"high", note:"Intel 7 is the renamed 10nm Enhanced SuperFin generation; it is not equivalent to TSMC/Samsung 7nm."},
+    4:{label:"Intel 4", density:10.40, speed:2.42, energy:.150, sram:32.0, vdd:.68, wafer:6285, intro:17128, d0:.24, conf:"high", note:"Intel public anchor: Intel 4 vs Intel 7 offers about 2× logic area scaling and >20% perf/W; VLSI reports cite additional iso-power/iso-frequency data."},
+    3:{label:"Intel 3", density:11.23, speed:2.85, energy:.127, sram:33.0, vdd:.66, wafer:8538, intro:20124.60, d0:.22, conf:"high", note:"Intel public anchor: Intel 3 vs Intel 4 gives about 1.08× chip density and 18% perf/W."},
+    2:{label:"18A/20A class", density:14.60, speed:3.28, energy:.110, sram:35.0, vdd:.64, wafer:11809, intro:28750, d0:.26, conf:"high", note:"Intel 18A public anchor: up to 15% perf/W and 30% chip density vs Intel 3; mapped to 2nm-class."}
   },
   SMIC:{
-    28:{label:"28HKMG", density:1.00, speed:1.00, energy:1.00, sram:5.4, vdd:.90, wafer:2200, d0:.12, conf:"high", note:"SMIC 28nm HKMG has public production history; used as the normalized baseline."},
-    14:{label:"14 FinFET", density:2.00, speed:1.45, energy:.45, sram:10.0, vdd:.80, wafer:4500, d0:.25, conf:"medium", note:"Public reporting indicates SMIC 14nm FinFET production; PPA values are estimated."},
-    7:{label:"N+1/N+2 7-class", density:4.85, speed:1.74, energy:.194, sram:21.0, vdd:.74, wafer:7500, d0:.38, conf:"medium", note:"Public reports: N+1 vs 14nm has about 20% performance gain, 57% power reduction, and 55–63% logic area reduction."},
+    28:{label:"28HKMG", density:1.00, speed:1.00, energy:1.00, sram:5.4, vdd:.90, wafer:1789, intro:3500, d0:.12, conf:"high", note:"SMIC 28nm HKMG has public production history; used as the normalized baseline."},
+    14:{label:"14 FinFET", density:2.00, speed:1.45, energy:.45, sram:10.0, vdd:.80, wafer:2813, intro:6601.67, d0:.25, conf:"medium", note:"Public reporting indicates SMIC 14nm FinFET production; PPA values are estimated."},
+    7:{label:"N+1/N+2 7-class", density:4.85, speed:1.74, energy:.194, sram:21.0, vdd:.74, wafer:3492, intro:9965, d0:.38, conf:"medium", note:"Public reports: N+1 vs 14nm has about 20% performance gain, 57% power reduction, and 55–63% logic area reduction."},
+  },
+  GF:{
+    28:{label:"28SLP / 28SLPe", density:1.00, speed:1.00, energy:1.00, sram:5.5, vdd:.90, wafer:1789, intro:3500, d0:.09, conf:"high", note:"GlobalFoundries 28nm SLP/SLPe HKMG is a production-proven mature CMOS platform with RF/SoC variants; used as the GF 28nm baseline."},
+    22:{label:"22FDX FD-SOI", density:1.25, speed:1.30, energy:.50, sram:6.8, vdd:.80, wafer:2100, intro:4200, d0:.08, conf:"high", note:"GF 22FDX is FD-SOI, not bulk FinFET. Public anchors: about 20% smaller die than 28nm, very-low-voltage operation, and up to ~50% lower power at same frequency / ~1.3× performance at same power depending on body bias."},
+    14:{label:"14LPP FinFET", density:2.05, speed:1.55, energy:.40, sram:10.4, vdd:.80, wafer:2813, intro:6601.67, d0:.11, conf:"high", note:"GF 14LPP product brief: up to 55% higher performance at iso-power and up to 60% lower power at iso-frequency versus 28nm; model density reflects roughly 45–55% area reduction depending on library/design."},
+    12:{label:"12LP / 12LP+ FinFET", density:2.70, speed:2.05, energy:.25, sram:12.4, vdd:.78, wafer:3024, intro:7495.33, d0:.12, conf:"medium", note:"GF 12LP improves over 14nm with up to 15% circuit-density and >10% performance gains; 12LP+ public collateral cites up to 20% higher performance and 36% lower total power versus 12LP. This entry models the production 12LP/12LP+ family rather than a placeholder node."},
   },
   "Huawei τ":{
-    14:{label:"Huawei/SMIC 14 FinFET reference", density:2, rawMtr:null, stdMtr:30.6, speed:1.45, energy:0.45, sram:10, vdd:0.8, wafer:4500, d0:0.25, conf:"medium", waferMult:1, yieldStacks:1, note:"Conventional 14nm reference; not a τ/LogicFold two-wafer point."},
-    10:{label:"τ pre-LF 2023/2024 raw 126", density:5.4902, rawMtr:126, stdMtr:84, speed:2.6, energy:0.384615, sram:21, vdd:0.74, wafer:7500, d0:0.38, conf:"roadmap", waferMult:2, yieldStacks:2, note:"τ roadmap raw density 126 MTr/mm². Converted by raw×2/3 from 2T CPP×cell-height density to NAND2/SDB TSMC-style MTR. Cost uses two dies/wafers and yield is squared."},
-    7:{label:"τ 2025 raw 155", density:6.75381, rawMtr:155, stdMtr:103.333, speed:2.75, energy:0.363636, sram:22.5, vdd:0.73, wafer:8500, d0:0.45, conf:"roadmap", waferMult:2, yieldStacks:2, note:"τ roadmap raw density 155 MTr/mm². Standard TSMC-style MTR uses the NAND2/SDB 4/(3CPP×H) conversion, i.e. 2/3 of raw 2T density."},
-    6:{label:"LogicFold 2026 raw 238", density:10.3704, rawMtr:238, stdMtr:158.667, speed:3.1, energy:0.322581, sram:24.5, vdd:0.71, wafer:12000, d0:0.55, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 238 MTr/mm² and 3.1 GHz P-core frequency. Cost/yield are modeled as a two-die / two-wafer stack."},
-    5:{label:"LogicFold 2027 raw 252", density:10.9804, rawMtr:252, stdMtr:168, speed:3.39, energy:0.294985, sram:25.5, vdd:0.7, wafer:13000, d0:0.6, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 252 MTr/mm² and 3.39 GHz. Raw MTR is not compared directly; area scaling uses standardized TSMC-style MTR."},
-    4:{label:"LogicFold 2028 raw 266", density:11.5904, rawMtr:266, stdMtr:177.333, speed:3.71, energy:0.269542, sram:26.5, vdd:0.69, wafer:15000, d0:0.7, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 266 MTr/mm² and 3.71 GHz design point."},
-    3:{label:"LogicFold 2030 raw 292", density:12.7233, rawMtr:292, stdMtr:194.667, speed:4.3, energy:0.232558, sram:28, vdd:0.68, wafer:18000, d0:0.85, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap raw density 292 MTr/mm² and 4.3 GHz point. This is a roadmap/effective-density model, not a public PDK."},
-    2:{label:"LogicFold 2031 raw 400+", density:17.4292, rawMtr:400, stdMtr:266.667, speed:5, energy:0.2, sram:30, vdd:0.66, wafer:22000, d0:1, conf:"roadmap", waferMult:2, yieldStacks:2, note:"LogicFold roadmap shows 400+ raw MTr/mm² and 5.0 GHz. The tool uses 400 as the conservative numeric floor, converts to standard MTR by ×2/3, doubles die/wafer cost, and squares yield."}
+    14:{label:"Huawei/SMIC 14 FinFET reference", density:2, rawMtr:null, stdMtr:30.6, speed:1.45, energy:0.45, sram:10, vdd:0.8, wafer:2813, intro:6601.67, d0:0.25, conf:"medium", waferMult:1, yieldStacks:1, bondYield:1, note:"Conventional 14nm reference; not a τ/LogicFold W2W point."},
+    10:{label:"τ pre-LF 2023/2024 raw 126", density:5.4902, rawMtr:126, stdMtrRaw:84, stdMtr:84, speed:2.6, energy:0.384615, sram:21, vdd:0.74, wafer:3249, intro:8389, d0:0.38, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2023/2024", note:"τ roadmap raw density 126 MTr/mm². Converted by raw×2/3 from 2T CPP×cell-height density to NAND2/SDB TSMC-style MTR. W2W yield uses layer yields multiplied by bonding yield."},
+    7:{label:"τ 2025 baseline raw 155", density:6.75381, rawMtr:155, stdMtrRaw:103.333, stdMtr:103.333, speed:2.75, energy:0.363636, sram:22.5, vdd:0.73, wafer:3492, intro:9965, d0:0.45, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2025", chipDensityX:1.0, note:"2025 LogicFolding baseline from the slide: chip density = 1×. Raw MTR 155 is converted by ×2/3 to 103.3 standardized MTr/mm²."},
+    6:{label:"LogicFold 2026 raw 238 / chip 1.6×", density:10.8061, rawMtr:238, stdMtrRaw:158.667, stdMtr:165.333, speed:3.10, energy:0.324675, sram:24.5, vdd:0.71, wafer:4024, intro:12493.50, d0:0.55, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2026", chipDensityX:1.6, perfCpu:1.15, powerEffCpu:1.12, dspAreaFactor:0.60, dspFreqGain:1.37, dspPowerFactor:0.76, note:"Slide-validated LogicFolding point: chip density 1.6× vs 2025 baseline, consistent with the DSP case die-area reduction of about 40%. Area scaling uses effective standardized MTR 103.3×1.6 = 165.3; raw 238×2/3 = 158.7 is kept as the physical 2T-MTR conversion cross-check."},
+    5:{label:"LogicFold 2027 raw 252 / chip 1.7×", density:11.4815, rawMtr:252, stdMtrRaw:168, stdMtr:175.667, speed:3.39, energy:0.27137, sram:25.5, vdd:0.70, wafer:4637, intro:15022, d0:0.60, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2027", chipDensityX:1.7, perfCpu:1.44, perfGpu:1.87, perfNpu:3.13, powerEffCpu:1.34, powerEffGpu:1.78, powerEffNpu:2.18, note:"Slide-validated LogicFolding point: chip density 1.7× vs 2025. XPU slide reports 2027 performance gains of CPU single-core +44%, CPU multi-core +56%, GPU +87%, NPU +213%, and power-efficiency gains of CPU +34%, GPU +78%, NPU +118%. Default frequency remains the P-core roadmap estimate."},
+    4:{label:"LogicFold 2029 raw 277 / chip 1.8×", density:12.1569, rawMtr:277, stdMtrRaw:184.667, stdMtr:186, speed:4.00, energy:0.25, sram:27, vdd:0.69, wafer:6285, intro:17128, d0:0.72, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2029", chipDensityX:1.8, note:"Slide-validated 2029 chip-density point: 1.8× vs the 2025 LogicFolding baseline. The older circuits-roadmap 2028/2029 raw density is rounded to 277 MTr/mm²; effective standardized MTR uses 103.3×1.8 = 186."},
+    3:{label:"LogicFold 2030 raw 292", density:12.7233, rawMtr:292, stdMtrRaw:194.667, stdMtr:194.667, speed:4.30, energy:0.232558, sram:28, vdd:0.68, wafer:8538, intro:20124.60, d0:0.85, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2030", note:"Roadmap point: raw density 292 MTr/mm² and 4.3 GHz P-core frequency. Not independently verified as a public PDK."},
+    2:{label:"LogicFold 2031 raw 400+", density:17.4292, rawMtr:400, stdMtrRaw:266.667, stdMtr:266.667, speed:5.00, energy:0.2, sram:30, vdd:0.66, wafer:11809, intro:28750, d0:1.0, conf:"roadmap", waferMult:2, yieldStacks:2, bondYield:0.995, lfYear:"2031", note:"Roadmap shows 400+ raw MTr/mm² and 5.0 GHz. The tool uses 400 as the conservative numeric floor and converts raw 2T density by ×2/3; W2W cost uses selected layer count and yield includes bonding yield per interface."}
   }
 };
 
 let activeMetric = "area";
 let activeTrendFoundries = new Set(FOUND_ORD);
 const els = {};
-const ids = ["currentFoundry","currentNode","targetFoundry","targetNode","logicArea","logicPower","frequency","otherArea","sramMbit","sramPower","freqRealization","areaOverhead","powerGuard","waferDiameter","pkgTest","nre","volume","lineYield","alpha","d0Mult","costMult","taoStackLayers","showSameFreq"];
+const ids = ["currentFoundry","currentNode","targetFoundry","targetNode","logicArea","logicPower","frequency","otherArea","sramMbit","sramPower","freqRealization","areaOverhead","powerGuard","waferDiameter","costBasis","pkgTest","nre","volume","lineYield","alpha","d0Mult","costMult","taoStackLayers","taoBondYield","showSameFreq"];
 ids.forEach(id=>els[id]=document.getElementById(id));
 function isAvailableNode(foundry,node){
   return !!(DATA[foundry] && DATA[foundry][node] && !["low","alias"].includes(DATA[foundry][node].conf));
@@ -580,7 +603,7 @@ function getInput(){
   return {
     currentFoundry:els.currentFoundry.value, currentNode:Number(els.currentNode.value), targetFoundry:els.targetFoundry.value, targetNode:Number(els.targetNode.value),
     logicArea:num("logicArea"), logicPower:num("logicPower"), frequency:num("frequency"), otherArea:num("otherArea"), sramMbit:num("sramMbit"), sramPower:num("sramPower"),
-    freqRealization:num("freqRealization"), areaOverhead:num("areaOverhead"), powerGuard:num("powerGuard"), waferDiameter:num("waferDiameter"), pkgTest:num("pkgTest"), nre:num("nre"), volume:Math.max(1,num("volume")), lineYield:num("lineYield"), alpha:num("alpha"), d0Mult:num("d0Mult"), costMult:num("costMult"), taoStackLayers:Math.max(2, Math.min(3, Math.round(num("taoStackLayers")||2))), showSameFreq:els.showSameFreq.checked
+    freqRealization:num("freqRealization"), areaOverhead:num("areaOverhead"), powerGuard:num("powerGuard"), waferDiameter:num("waferDiameter"), costBasis:els.costBasis.value, pkgTest:num("pkgTest"), nre:num("nre"), volume:Math.max(1,num("volume")), lineYield:num("lineYield"), alpha:num("alpha"), d0Mult:num("d0Mult"), costMult:num("costMult"), taoStackLayers:Math.max(2, Math.min(3, Math.round(num("taoStackLayers")||2))), taoBondYield:Math.max(0, Math.min(1, num("taoBondYield")||0.995)), showSameFreq:els.showSameFreq.checked
   };
 }
 function fmt(v, digits=2){
@@ -601,6 +624,7 @@ function money(v){
 function pct(v){return (v*100).toFixed(v<.1?2:1)+"%"}
 const TSMC28_MTR = 15.3;
 function stdMtr(d){return Number.isFinite(d.stdMtr)?d.stdMtr:d.density*TSMC28_MTR}
+function rawConvertedMtr(d){return Number.isFinite(d.stdMtrRaw)?d.stdMtrRaw:(Number.isFinite(d.rawMtr)?d.rawMtr*2/3:null)}
 function rawMtrText(d){return Number.isFinite(d.rawMtr)?fmt(d.rawMtr)+" raw 2T MTr/mm²":"—"}
 function stdMtrText(d){return fmt(stdMtr(d))+" MTr/mm²"}
 function stackLabel(r){return r.yieldStacks>1 ? `${r.yieldStacks}-die / ${r.yieldStacks}-wafer stack` : "single wafer"}
@@ -609,6 +633,12 @@ function grossDies(area, dia){
   if(area<=0) return 0;
   const r = dia/2;
   return Math.max(0, Math.PI*r*r/area - Math.PI*dia/Math.sqrt(2*area));
+}
+function waferBaseCost(d, basis){
+  return basis === "intro" && Number.isFinite(d.intro) ? d.intro : d.wafer;
+}
+function costBasisText(basis){
+  return basis === "intro" ? "IBS intro wafer price" : "IBS manufacturing wafer cost";
 }
 function calc(foundry, node, inp){
   const cur = DATA[inp.currentFoundry][inp.currentNode];
@@ -645,13 +675,15 @@ function calc(foundry, node, inp){
   const waferMult = taoStackable ? configuredLayers : Math.max(1, Number(t.waferMult||1));
   const yieldStacks = taoStackable ? configuredLayers : Math.max(1, Number(t.yieldStacks||1));
   const baseYield = dieYield*inp.lineYield;
-  const finalYield = Math.pow(baseYield, yieldStacks);
-  const waferUnitCost = t.wafer*inp.costMult;
+  const bondYield = yieldStacks>1 ? Math.max(0, Math.min(1, Number(inp.taoBondYield || t.bondYield || 0.995))) : 1;
+  const bondInterfaces = Math.max(0, yieldStacks-1);
+  const finalYield = Math.pow(baseYield, yieldStacks) * Math.pow(bondYield, bondInterfaces);
+  const waferUnitCost = waferBaseCost(t, inp.costBasis)*inp.costMult;
   const waferCost = waferUnitCost*waferMult;
   const dieMfgCost = gd>0 && finalYield>0 ? waferCost/(gd*finalYield) : Infinity;
   const nrePerDie = inp.nre/Math.max(inp.volume,1);
   const cost = dieMfgCost + inp.pkgTest + nrePerDie;
-  return {foundry,node,info:t, logicArea,sramArea,totalArea,currentTotalArea,freq,freqRatio,logicPowerSame,logicPowerConv,sramPowerSame,sramPowerConv,powerSame,powerConv,gd,d0,dieYield,baseYield,finalYield,waferUnitCost,waferMult,yieldStacks,waferCost,dieMfgCost,nrePerDie,cost,densityRatio,energyRatio};
+  return {foundry,node,info:t, costBasis:inp.costBasis, logicArea,sramArea,totalArea,currentTotalArea,freq,freqRatio,logicPowerSame,logicPowerConv,sramPowerSame,sramPowerConv,powerSame,powerConv,gd,d0,dieYield,baseYield,bondYield,bondInterfaces,finalYield,waferUnitCost,waferMult,yieldStacks,waferCost,dieMfgCost,nrePerDie,cost,densityRatio,energyRatio};
 }
 
 function clamp(v, lo, hi){return Math.max(lo, Math.min(hi, v))}
@@ -681,6 +713,7 @@ function getWaferInput(inp, r){
     alpha: Math.max(0.1, readMapNumber("mapAlpha", inp.alpha || 3)),
     lineYield: clamp(readMapNumber("mapLineYield", inp.lineYield*100)/100, 0, 1),
     ppm: clamp(readMapNumber("mapPpm", 0), 0, 1000000),
+    bondYield: clamp(readMapNumber("mapBondYield", (inp.taoBondYield || r.bondYield || 0.995)*100)/100, 0, 1),
     waferUnitCost: Math.max(0, readMapNumber("mapWaferCost", r.waferUnitCost)),
     edgeBoost: Math.max(0, readMapNumber("mapEdgeBoost", .6)),
     seed: Math.floor(readMapNumber("mapSeed", 2026)),
@@ -723,12 +756,16 @@ function calcWaferMap(inp, r){
         layerPasses.push(p);
         if(p) layerGood[li]++;
       }
-      const pass = layerPasses.every(Boolean);
-      const finalY = Math.pow(singleY, wInp.yieldStacks);
+      const bondPasses=[];
+      for(let bi=0; bi<Math.max(0,wInp.yieldStacks-1); bi++){
+        bondPasses.push(seededRand(ix,iy,wInp.seed + 99991*(bi+1) + 700001) < wInp.bondYield);
+      }
+      const pass = layerPasses.every(Boolean) && bondPasses.every(Boolean);
+      const finalY = Math.pow(singleY, wInp.yieldStacks) * Math.pow(wInp.bondYield, Math.max(0,wInp.yieldStacks-1));
       if(pass) good++; else bad++;
       expected += finalY;
       singleExpected += singleY;
-      dies.push({x:cx,y:cy,pass,layerPasses,finalY,singleY,radial});
+      dies.push({x:cx,y:cy,pass,layerPasses,bondPasses,finalY,singleY,radial});
     }
   }
   const total=dies.length;
@@ -748,11 +785,11 @@ function updateWaferMap(inp, r){
   setText("waferGoodDies", `${m.good.toLocaleString()} / ${m.bad.toLocaleString()}`);
   setText("waferBadDies", `red dies = simulated fail, seed ${m.seed}`);
   setText("waferYield", `${pct(m.expYield)} / ${pct(m.simYield)}`);
-  setText("waferExpected", m.yieldStacks>1 ? `avg layer yield ${pct(m.singleYieldAvg)}; stack = layer^${m.yieldStacks}` : `avg single-die yield ${pct(m.singleYieldAvg)}; PPM penalty ${(m.ppm/10000).toFixed(3)}%`);
+  setText("waferExpected", m.yieldStacks>1 ? `avg layer yield ${pct(m.singleYieldAvg)}; stack = layer^${m.yieldStacks} × bond^${m.yieldStacks-1}` : `avg single-die yield ${pct(m.singleYieldAvg)}; PPM penalty ${(m.ppm/10000).toFixed(3)}%`);
   setText("waferMapCost", money(m.expectedCost));
   setText("waferCostFoot", `sim ${money(m.simCost)}, wafer ${money(m.waferUnitCost)}×${m.waferMult}`);
-  const stackText = m.yieldStacks>1 ? `Huawei τ W2W stack ON: final pass ≈ layer yield^${m.yieldStacks}; wafer cost = ${money(m.waferUnitCost)} × ${m.waferMult}. Canvas shows each layer and final intersection.` : "Single-wafer mode: final pass uses one die yield and one wafer cost.";
-  setText("waferStackFoot", `${m.targetLabel}. D0=${m.d0}/cm², α=${m.alpha}, line=${pct(m.lineYield)}, extra failures=${m.ppm.toLocaleString()} PPM. ${stackText}`);
+  const stackText = m.yieldStacks>1 ? `Huawei τ W2W stack ON: final pass ≈ layer yield^${m.yieldStacks} × bonding ${pct(m.bondYield)}^${m.yieldStacks-1}; wafer cost = ${money(m.waferUnitCost)} × ${m.waferMult}. Canvas shows each layer and final stack intersection including bonding.` : "Single-wafer mode: final pass uses one die yield and one wafer cost.";
+  setText("waferStackFoot", `${m.targetLabel}. D0=${m.d0}/cm², α=${m.alpha}, line=${pct(m.lineYield)}, bonding=${pct(m.bondYield)}, extra failures=${m.ppm.toLocaleString()} PPM. ${stackText}`);
   drawWaferMap(m);
 }
 function drawWaferMap(m){
@@ -832,6 +869,7 @@ function syncWaferFromTarget(){
   setMapValue("mapAlpha", inp.alpha.toFixed(2));
   setMapValue("mapLineYield", (inp.lineYield*100).toFixed(1));
   setMapValue("mapWaferCost", r.waferUnitCost.toFixed(0));
+  setMapValue("mapBondYield", ((r.bondYield || inp.taoBondYield || 0.995)*100).toFixed(2));
   if(document.getElementById("mapStackLayers")) setMapValue("mapStackLayers", String(r.yieldStacks>1 ? r.yieldStacks : inp.taoStackLayers || 2));
   updateWaferMap(inp,r);
 }
@@ -852,6 +890,7 @@ function updateRangeLabels(inp){
   document.getElementById("alphaVal").textContent = inp.alpha.toFixed(1);
   document.getElementById("d0MultVal").textContent = inp.d0Mult.toFixed(2)+"×";
   document.getElementById("costMultVal").textContent = inp.costMult.toFixed(2)+"×";
+  document.getElementById("taoBondYieldVal").textContent = (inp.taoBondYield*100).toFixed(2)+"%";
 }
 function updateCards(inp, r){
   document.getElementById("miniTarget").textContent = `${r.foundry} ${r.info.label}`;
@@ -862,7 +901,7 @@ function updateCards(inp, r){
   document.getElementById("logicAreaOut").textContent = fmt(r.logicArea)+" mm²";
   document.getElementById("logicAreaFoot").textContent = `Logic density vs current ${r.densityRatio.toFixed(2)}×; Area ratio ${(r.logicArea/Math.max(inp.logicArea,1e-9)).toFixed(3)}×`;
   document.getElementById("mtrOut").textContent = stdMtrText(r.info);
-  document.getElementById("mtrFoot").textContent = Number.isFinite(r.info.rawMtr) ? `${rawMtrText(r.info)} → standardized by ×2/3` : `Derived from density×28 using ${TSMC28_MTR} MTr/mm² baseline`;
+  document.getElementById("mtrFoot").textContent = Number.isFinite(r.info.rawMtr) ? `${rawMtrText(r.info)}; raw×2/3=${fmt(rawConvertedMtr(r.info))} MTr/mm²; area uses ${stdMtrText(r.info)}` : `Derived from density×28 using ${TSMC28_MTR} MTr/mm² baseline`;
   document.getElementById("sramAreaOut").textContent = fmt(r.sramArea)+" mm²";
   document.getElementById("sramAreaFoot").textContent = inp.sramMbit>0 ? `${inp.sramMbit} Mbit / ${fmt(r.info.sram)} Mb/mm²` : "No SRAM capacity entered; treated as 0";
   document.getElementById("freqOut").textContent = fmt(r.freq)+" GHz";
@@ -871,16 +910,16 @@ function updateCards(inp, r){
   const same = inp.showSameFreq ? `; same-frequency ${fmt(r.powerSame)} W` : "";
   document.getElementById("powerConvFoot").textContent = `Same-function energy ratio ${r.energyRatio.toFixed(3)}×, frequency ratio ${r.freqRatio.toFixed(2)}×${same}`;
   document.getElementById("yieldOut").textContent = pct(r.finalYield);
-  const yieldStackText = r.yieldStacks>1 ? `, stack yield ${pct(r.baseYield)}^${r.yieldStacks}` : "";
+  const yieldStackText = r.yieldStacks>1 ? `, stack yield ${pct(r.baseYield)}^${r.yieldStacks} × ${pct(r.bondYield)}^${r.bondInterfaces}` : "";
   document.getElementById("yieldFoot").textContent = `D0 = ${r.d0.toFixed(3)} /cm², gross dies ≈ ${Math.floor(r.gd).toLocaleString()}, die yield ${pct(r.dieYield)}${yieldStackText}`;
   document.getElementById("costOut").textContent = money(r.cost);
   const waferText = r.waferMult>1 ? `wafer ${money(r.waferUnitCost)} × ${r.waferMult} = ${money(r.waferCost)}` : `wafer ${money(r.waferCost)}`;
-  document.getElementById("costFoot").textContent = `${waferText}, mfg ${money(r.dieMfgCost)}, NRE ${money(r.nrePerDie)}/die`;
+  document.getElementById("costFoot").textContent = `${costBasisText(inp.costBasis)} · ${waferText}, die cost ${money(r.dieMfgCost)}, NRE ${money(r.nrePerDie)}/die`;
   document.getElementById("areaBadge").innerHTML = confBadge(r.info.conf);
   document.getElementById("resultCaption").textContent = `Current ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} → Target ${r.foundry} ${r.info.label}, Total Area ${fmt(r.totalArea)} mm².`;
   const mtrLine = Number.isFinite(r.info.rawMtr) ? `Raw τ MTR=${fmt(r.info.rawMtr)}; TSMC-style MTR=${stdMtrText(r.info)}.` : `TSMC-style MTR=${stdMtrText(r.info)}.`;
-  const stackLine = (r.info.waferMult||1)>1 ? ` Cost uses ${r.waferMult} dies/wafers; yield is multiplied across ${r.yieldStacks} W2W layers.` : "";
-  document.getElementById("selectedNote").innerHTML = `${confBadge(r.info.conf)} <b>${r.foundry} ${r.info.label}</b>: ${r.info.note}<br><span class="small">${mtrLine}${stackLine} Default wafer cost = ${money(r.info.wafer)} per wafer, D0 = ${r.info.d0}/cm², SRAM density=${fmt(r.info.sram)} Mb/mm².</span>`;
+  const stackLine = (r.info.waferMult||1)>1 ? ` Cost uses ${r.waferMult} dies/wafers; yield = layer^${r.yieldStacks} × bonding^${r.bondInterfaces} with bonding ${pct(r.bondYield)} per interface.` : "";
+  document.getElementById("selectedNote").innerHTML = `${confBadge(r.info.conf)} <b>${r.foundry} ${r.info.label}</b>: ${r.info.note}<br><span class="small">${mtrLine}${stackLine} Default wafer base = ${money(waferBaseCost(r.info, inp.costBasis))} per wafer (${costBasisText(inp.costBasis)}); mfg ${money(r.info.wafer)}, intro ${money(r.info.intro)}. D0 = ${r.info.d0}/cm², SRAM density=${fmt(r.info.sram)} Mb/mm².</span>`;
 }
 function rowClass(r, inp){return `${r.node===inp.targetNode&&r.foundry===inp.targetFoundry?'target-row ':''}`}
 function buildTable(headers, rows){
@@ -906,10 +945,10 @@ function updateDataTable(){
   for(const f of FOUND_ORD){
     for(const n of availableNodes(f)){
       const d=DATA[f][n];
-      rows.push(`<tr><td>${f}</td><td>${n} nm</td><td>${d.label} ${confBadge(d.conf)}</td><td>${fmt(d.density)}</td><td>${stdMtrText(d)}</td><td>${rawMtrText(d)}</td><td>${fmt(d.speed)}</td><td>${fmt(d.energy)}</td><td>${fmt(d.sram)}</td><td>${fmt(d.vdd)}</td><td>${money(d.wafer)}${(d.waferMult||1)>1?" × "+d.waferMult:""}</td><td>${d.d0.toFixed(3)}</td><td>${d.note}</td></tr>`);
+      rows.push(`<tr><td>${f}</td><td>${n} nm</td><td>${d.label} ${confBadge(d.conf)}</td><td>${fmt(d.density)}</td><td>${stdMtrText(d)}</td><td>${rawMtrText(d)}</td><td>${fmt(d.speed)}</td><td>${fmt(d.energy)}</td><td>${fmt(d.sram)}</td><td>${fmt(d.vdd)}</td><td>${money(d.wafer)}</td><td>${money(d.intro)}</td><td>${(d.waferMult||1)>1?"×"+d.waferMult:"—"}</td><td>${d.d0.toFixed(3)}</td><td>${d.note}</td></tr>`);
     }
   }
-  document.getElementById("dataTable").innerHTML = buildTable(["Foundry","Node","Process","Density ×28","Std TSMC MTR","Raw τ MTR","Frequency ×28","Same-Freq Energy ×28","SRAM Mb/mm²","VDD","Wafer","D0","Notes"], rows);
+  document.getElementById("dataTable").innerHTML = buildTable(["Foundry","Node","Process","Density ×28","Std TSMC MTR","Raw τ MTR","Frequency ×28","Same-Freq Energy ×28","SRAM Mb/mm²","VDD","Mfg Wafer","Intro Price","W2W Cost","D0","Notes"], rows);
 }
 function metricValue(r, metric){
   switch(metric){
@@ -1105,16 +1144,17 @@ function update(){
 function toast(msg){const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800)}
 function currentSummary(){
   const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp);
-  return `CMOS PPAC Scaling: ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} -> ${r.foundry} ${r.info.label}\nAuthor: Liangdacheng with GPT5.5\nLogic Area: ${fmt(inp.logicArea)} -> ${fmt(r.logicArea)} mm²\nTotal Area: ${fmt(r.currentTotalArea)} -> ${fmt(r.totalArea)} mm²\nFrequency: ${fmt(inp.frequency)} -> ${fmt(r.freq)} GHz\nPower @ converged frequency: ${fmt(inp.logicPower)} -> ${fmt(r.powerConv)} W\nYield: ${pct(r.finalYield)}\nCost/good die: ${money(r.cost)}\nNotes: ${r.info.note}`;
+  return `CMOS PPAC Scaling: ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} -> ${r.foundry} ${r.info.label}\nAuthor: Liangdacheng with GPT5.5\nLogic Area: ${fmt(inp.logicArea)} -> ${fmt(r.logicArea)} mm²\nTotal Area: ${fmt(r.currentTotalArea)} -> ${fmt(r.totalArea)} mm²\nFrequency: ${fmt(inp.frequency)} -> ${fmt(r.freq)} GHz\nPower @ converged frequency: ${fmt(inp.logicPower)} -> ${fmt(r.powerConv)} W\nYield: ${pct(r.finalYield)}${r.yieldStacks>1?` (layer ${pct(r.baseYield)}^${r.yieldStacks} × bonding ${pct(r.bondYield)}^${r.bondInterfaces})`:``}
+Cost/good die: ${money(r.cost)}\nNotes: ${r.info.note}`;
 }
 function bind(){
   const passiveIds = ids.filter(id=>!["currentFoundry","currentNode","targetFoundry","targetNode"].includes(id));
-  passiveIds.forEach(id=>els[id].addEventListener(id==="showSameFreq"?"change":"input", update));
+  passiveIds.forEach(id=>els[id].addEventListener(["showSameFreq","costBasis"].includes(id)?"change":"input", update));
   els.currentFoundry.addEventListener("change",()=>{populateNodeSelect(els.currentNode, els.currentFoundry.value, els.currentNode.value); update();});
   els.targetFoundry.addEventListener("change",()=>{populateNodeSelect(els.targetNode, els.targetFoundry.value, els.targetNode.value); update();});
   [els.currentNode,els.targetNode].forEach(e=>e.addEventListener("change", update));
   document.getElementById("metricChips").addEventListener("click",e=>{if(e.target.matches(".chip")){document.querySelectorAll("#metricChips .chip").forEach(c=>c.classList.remove("active")); e.target.classList.add("active"); activeMetric=e.target.dataset.metric; update();}});
-  const waferIds=["mapDieW","mapDieH","mapWaferDia","mapEdge","mapD0","mapAlpha","mapLineYield","mapPpm","mapWaferCost","mapEdgeBoost","mapSeed","mapStackLayers","mapUseStack"];
+  const waferIds=["mapDieW","mapDieH","mapWaferDia","mapEdge","mapD0","mapAlpha","mapLineYield","mapPpm","mapBondYield","mapWaferCost","mapEdgeBoost","mapSeed","mapStackLayers","mapUseStack"];
   waferIds.forEach(id=>{const el=document.getElementById(id); if(el) el.addEventListener(id==="mapUseStack"?"change":"input",()=>{const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp); updateWaferMap(inp,r);});});
   const syncBtn=document.getElementById("btnSyncWafer"); if(syncBtn) syncBtn.addEventListener("click",()=>{syncWaferFromTarget(); toast("Wafer map synced from target node")});
   const redrawBtn=document.getElementById("btnRedrawWafer"); if(redrawBtn) redrawBtn.addEventListener("click",()=>{const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp); updateWaferMap(inp,r); toast("Wafer map redrawn")});
