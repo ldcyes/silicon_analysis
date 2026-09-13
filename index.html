@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CMOS PPAC Scaling Studio | Area · Power · Frequency · Yield · Cost</title>
-  <meta name="author" content="Liangdacheng with GPT5.5" />
+  <title>Flash Silicon Analyzer | Area · Power · Frequency · Yield · Cost</title>
+  <meta name="author" content="Liang Dacheng" />
   <style>
     :root{
       --bg:#050713;
@@ -265,11 +265,11 @@
     <header>
       <div class="hero">
         <div class="hero-card">
-          <span class="kicker"><span class="pulse"></span> PPAC Scaling Studio · CMOS</span>
-          <h1><span class="grad">CMOS PPAC</span></h1>
+          <span class="kicker"><span class="pulse"></span> Flash Silicon Analyzer · CMOS PPAC</span>
+          <h1><span class="grad">Flash Silicon Analyzer</span></h1>
           <div class="hero-subline">Area · Power · Frequency · Yield · Cost</div>
           <p class="subtitle">Enter the current logic area, active power, and converged frequency, then choose the source and target foundry/node. The tool estimates area, power, converged frequency, yield, and cost per good die for the target node and nearby nodes. Built-in defaults cover TSMC, Samsung, Intel, SMIC, GlobalFoundries/GF, and Huawei τ at available 28/22/16/14/12/10/7/6/5/4/3/2nm-class nodes. Low-confidence and mapped placeholder processes are removed from the selectable dataset.</p>
-          <div class="author-credit">Author: Liangdacheng with GPT5.5</div>
+          <div class="author-credit">Author: Liang Dacheng · AI assistance: GPT5.5</div>
           <div class="hero-actions">
             <a class="btn primary" href="#inputs">Start Scaling</a>
             <button class="btn" id="btnCopy">Copy Summary</button>
@@ -481,7 +481,7 @@
       </div>
       <p class="small" style="margin-top:14px">Recommended use: use this tool for early architecture/technology trade-offs. During a real project, replace defaults with the target foundry PDK, standard-cell library, SRAM compiler, floorplan, STA, power, IR-drop, and thermal signoff results.</p>
     </section>
-    <div class="footer-credit"><b>Author:</b> Liangdacheng with GPT5.5</div>
+    <div class="footer-credit"><b>Author:</b> Liang Dacheng · AI assistance: GPT5.5</div>
   </div>
   <div id="toast" class="toast">Copied</div>
 
@@ -1144,7 +1144,7 @@ function update(){
 function toast(msg){const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800)}
 function currentSummary(){
   const inp=getInput(); const r=calc(inp.targetFoundry,inp.targetNode,inp);
-  return `CMOS PPAC Scaling: ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} -> ${r.foundry} ${r.info.label}\nAuthor: Liangdacheng with GPT5.5\nLogic Area: ${fmt(inp.logicArea)} -> ${fmt(r.logicArea)} mm²\nTotal Area: ${fmt(r.currentTotalArea)} -> ${fmt(r.totalArea)} mm²\nFrequency: ${fmt(inp.frequency)} -> ${fmt(r.freq)} GHz\nPower @ converged frequency: ${fmt(inp.logicPower)} -> ${fmt(r.powerConv)} W\nYield: ${pct(r.finalYield)}${r.yieldStacks>1?` (layer ${pct(r.baseYield)}^${r.yieldStacks} × bonding ${pct(r.bondYield)}^${r.bondInterfaces})`:``}
+  return `Flash Silicon Analyzer: ${inp.currentFoundry} ${DATA[inp.currentFoundry][inp.currentNode].label} -> ${r.foundry} ${r.info.label}\nAuthor: Liang Dacheng\nAI assistance: GPT5.5\nLogic Area: ${fmt(inp.logicArea)} -> ${fmt(r.logicArea)} mm²\nTotal Area: ${fmt(r.currentTotalArea)} -> ${fmt(r.totalArea)} mm²\nFrequency: ${fmt(inp.frequency)} -> ${fmt(r.freq)} GHz\nPower @ converged frequency: ${fmt(inp.logicPower)} -> ${fmt(r.powerConv)} W\nYield: ${pct(r.finalYield)}${r.yieldStacks>1?` (layer ${pct(r.baseYield)}^${r.yieldStacks} × bonding ${pct(r.bondYield)}^${r.bondInterfaces})`:``}
 Cost/good die: ${money(r.cost)}\nNotes: ${r.info.note}`;
 }
 function bind(){

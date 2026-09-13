@@ -1,0 +1,2 @@
+# Optional: needed only to regenerate vector figures and result tables.
+matplotlib==3.10.8
